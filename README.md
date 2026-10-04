@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MCC Employee Portal
 
-## Getting Started
+Modern employee portal for **Midwestern Career College** — built with Next.js 14, TypeScript, Tailwind CSS, and NextAuth.js.
 
-First, run the development server:
+## ✨ Features
 
+- 🔐 **Authentication**: Email/password accounts + Okta SSO (scaffolded)
+- 📢 **Announcements**: Company news with priority levels and pinning
+- 👥 **Employee Directory**: Searchable directory with department filtering
+- 📁 **Documents**: SharePoint-linked document library
+- 💊 **Benefits**: Comprehensive benefits overview (medical, dental, retirement, etc.)
+- 📋 **HR Resources**: Forms, policies, and payroll links
+- 💻 **IT Help Desk**: Support tickets and system status
+- 📅 **Events & Calendar**: Company events and important dates
+- 🔗 **Quick Links**: Customizable links to frequently used tools
+- 🛡️ **Role-based access**: Employee, HR, IT, Admin roles
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 20+
+- npm
+
+### 1. Clone and install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/YOUR_ORG/mcc-employee-portal.git
+cd mcc-employee-portal
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure environment
+```bash
+cp .env.example .env
+# Edit .env and fill in your values
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Generate a secret:
+```bash
+openssl rand -base64 32
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Set up database
+```bash
+npm run db:push        # Push schema to SQLite
+npm run db:seed        # Seed with sample data
+```
 
-## Learn More
+### 4. Run dev server
+```bash
+npm run dev
+# Open http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+**Default credentials after seeding:**
+- Admin: `admin@mccollege.edu` / `Admin@MCC2024!`
+- Employee: `s.johnson@mccollege.edu` / `Employee@123!`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🏗️ Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Auth | NextAuth.js v5 |
+| Database | SQLite (Prisma ORM) |
+| Icons | Lucide React |
+| Deployment | Docker + Coolify |
 
-## Deploy on Vercel
+## 🐳 Docker / Coolify Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Build and run locally
+```bash
+docker compose up --build
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Deploy to Coolify via GitHub
+
+1. Push to GitHub
+2. In Coolify: **New Resource → Application → GitHub**
+3. Select your repo, set build type to **Dockerfile**
+4. Set environment variables:
+   ```
+   AUTH_SECRET=<generate with: openssl rand -base64 32>
+   NEXTAUTH_URL=https://portal.yourdomain.com
+   DATABASE_URL=file:/data/portal.db
+   ```
+5. Add a **volume**: `/data` → `portal-db`
+6. Deploy!
+
+## 🔐 Enabling Okta SSO
+
+1. Create an app in your Okta Admin Console (type: **Web**, grant: **Authorization Code**)
+2. Set Sign-in redirect URI: `https://your-portal.com/api/auth/callback/okta`
+3. Add to `.env`:
+   ```
+   AUTH_OKTA_ID=your_client_id
+   AUTH_OKTA_SECRET=your_client_secret
+   AUTH_OKTA_ISSUER=https://your-domain.okta.com/oauth2/default
+   ```
+4. Uncomment the Okta provider in `auth.ts`
+
+## 🔗 SharePoint Integration
+
+Update the document URLs in `app/(dashboard)/documents/page.tsx` to point to your SharePoint site:
+```
+https://YOUR-TENANT.sharepoint.com/sites/Intranet/...
+```
+
+## 📂 Project Structure
+
+```
+├── app/
+│   ├── (dashboard)/          # Protected portal pages
+│   │   ├── dashboard/        # Home/dashboard
+│   │   ├── directory/        # Employee directory
+│   │   ├── documents/        # SharePoint docs
+│   │   ├── benefits/         # Benefits overview
+│   │   ├── hr/               # HR forms & resources
+│   │   ├── it-help/          # IT help desk
+│   │   └── events/           # Events & calendar
+│   ├── auth/                 # Login & register pages
+│   └── api/                  # API routes
+├── components/
+│   ├── sidebar.tsx           # Navigation sidebar
+│   ├── topbar.tsx            # Top bar
+│   └── widgets/              # Dashboard widgets
+├── lib/
+│   ├── prisma.ts             # Prisma client
+│   └── utils.ts              # Utilities
+├── prisma/
+│   ├── schema.prisma         # Database schema
+│   └── seed.ts               # Sample data
+├── auth.ts                   # NextAuth config
+├── middleware.ts              # Route protection
+├── Dockerfile
+└── docker-compose.yml
+```
+
+## 🗺️ Roadmap
+
+- [ ] Paylocity deep integration (time-off requests, pay stubs)
+- [ ] Push notifications for announcements
+- [ ] Benefits portal direct link integration
+- [ ] SharePoint document embed (iframe)
+- [ ] Employee onboarding workflow
+- [ ] Mobile app (React Native)

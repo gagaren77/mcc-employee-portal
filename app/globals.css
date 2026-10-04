@@ -1,26 +1,79 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --mcc-blue: #1a4a8a;
+  --mcc-gold: #c9a227;
+  --mcc-blue-dark: #0d2d5c;
+  --mcc-blue-light: #2563eb;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background-color: #f3f4f6;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* MCC brand utilities */
+.mcc-gradient {
+  background: linear-gradient(135deg, var(--mcc-blue-dark) 0%, var(--mcc-blue) 60%, var(--mcc-blue-light) 100%);
+}
+
+.mcc-card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  border: 1px solid #f3f4f6;
+  transition: box-shadow 0.2s ease-in-out;
+}
+.mcc-card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.mcc-btn-primary {
+  background-color: #1a4a8a;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease-in-out;
+}
+.mcc-btn-primary:hover {
+  background-color: #0d2d5c;
+}
+
+.mcc-btn-secondary {
+  background-color: #c9a227;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s ease-in-out;
+}
+.mcc-btn-secondary:hover {
+  background-color: #b8911e;
+}
+
+/* Page transition */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: fadeIn 0.3s ease-out;
 }

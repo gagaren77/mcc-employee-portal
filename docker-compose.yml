@@ -1,0 +1,29 @@
+services:
+  mcc-portal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcc-employee-portal
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=file:/data/portal.db
+      - AUTH_SECRET=${AUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      # Okta SSO — uncomment when ready
+      # - AUTH_OKTA_ID=${AUTH_OKTA_ID}
+      # - AUTH_OKTA_SECRET=${AUTH_OKTA_SECRET}
+      # - AUTH_OKTA_ISSUER=${AUTH_OKTA_ISSUER}
+    volumes:
+      - portal-db:/data
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  portal-db:
+    driver: local
