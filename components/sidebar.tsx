@@ -12,7 +12,6 @@ import {
   Bookmark,
   ClipboardList,
   Settings,
-  GraduationCap,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
@@ -56,12 +55,16 @@ export function Sidebar({ user }: SidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
-        <div className="flex-shrink-0 w-8 h-8 bg-[#c9a227] rounded-lg flex items-center justify-center">
-          <GraduationCap className="w-5 h-5 text-white" />
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white flex items-center justify-center overflow-hidden p-0.5">
+          <img
+            src="/logo.png"
+            alt="My MCC Portal"
+            className="w-full h-full object-contain"
+          />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-bold leading-tight truncate">MCC</p>
+            <p className="text-sm font-bold leading-tight truncate">My MCC Portal</p>
             <p className="text-xs text-blue-300 leading-tight truncate">Employee Portal</p>
           </div>
         )}
