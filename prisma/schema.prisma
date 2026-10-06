@@ -97,6 +97,7 @@ model Event {
   endDate     DateTime?
   location    String?
   category    String   @default("general")
+  published   Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
