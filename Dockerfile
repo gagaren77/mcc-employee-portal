@@ -51,6 +51,8 @@ COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
 COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder /app/node_modules/esbuild ./node_modules/esbuild
+# ↓ NEW: platform-specific esbuild binary
+COPY --from=builder /app/node_modules/@esbuild ./node_modules/@esbuild
 
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
@@ -59,10 +61,13 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 # Create data dir (will be shadowed by the volume mount, but harmless)
 RUN mkdir -p /data && chown nextjs:nodejs /data
 
+# Make .prisma/client writable by nextjs so npx doesn't fail on generate
+RUN chown -R nextjs:nodejs /app/node_modules/.prisma
+
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Entrypoint fixes /data ownership, then drops privileges to nextjs, then runs CMD
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-CMD ["sh", "-c", "npx prisma db push && (npx prisma db seed || echo 'Seed skipped or failed — continuing startup') && node server.js"]
+CMD ["sh", "-c", "npx prisma db push --skip-generate && (npx prisma db seed || echo 'Seed skipped or failed — continuing startup') && node server.js"]
