@@ -95,6 +95,26 @@ export default async function AdminPage() {
         </div>
       </div>
 
+      {/* Events Management */}
+      <div className="mcc-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-[#1a4a8a]" />
+            Events
+          </h2>
+          <Link
+            href="/admin/events"
+            className="text-sm font-medium text-[#1a4a8a] hover:underline"
+          >
+            Manage events →
+          </Link>
+        </div>
+        <p className="text-sm text-gray-500">
+          {events.length} event{events.length === 1 ? "" : "s"} in the portal. Click
+          &ldquo;Manage events&rdquo; to add, edit, or publish/unpublish.
+        </p>
+      </div>
+
       {/* Staff Accounts Management */}
       <div className="mcc-card p-6">
         <div className="flex items-center justify-between mb-4">
