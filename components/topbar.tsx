@@ -103,21 +103,22 @@ export function TopBar({ user }: TopBarProps) {
 
                 {isAdminLevel && (
                   <Link
+                    href="/admin/events"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <Calendar className="w-4 h-4 text-gray-400" />
+                    Events
+                  </Link>
+                )}
+
+                {isAdminLevel && (
+                  <Link
                     href="/admin"
                     onClick={() => setDropdownOpen(false)}
                     className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     <Settings className="w-4 h-4 text-gray-400" />
-                {isAdminLevel && (
-                  <Link
-                     href="/admin/events"
-                     onClick={() => setDropdownOpen(false)}
-                     className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                   >
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                        Events
-                      </Link>
-                        )}  
                     Admin Settings
                   </Link>
                 )}
