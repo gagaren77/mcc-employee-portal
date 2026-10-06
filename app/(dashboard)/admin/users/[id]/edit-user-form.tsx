@@ -330,4 +330,27 @@ export function EditUserForm({ user }: EditUserFormProps) {
           outline: none;
         }
         .input:focus {
-          border-color: #1a4a8a
+          border-color: #1a4a8a;
+          box-shadow: 0 0 0 2px rgba(26, 74, 138, 0.15);
+        }
+      `}</style>
+    </div>
+  )
+}
+
+function Field({
+  label,
+  children,
+}: {
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        {label}
+      </label>
+      {children}
+    </div>
+  )
+}
