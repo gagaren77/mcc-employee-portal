@@ -47,4 +47,4 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Run migrations then start the app
-CMD ["sh", "-c", "npx prisma db push && npx prisma db seed && node server.js"]
+CMD ["sh", "-c", "npx prisma db push && (npx prisma db seed || echo '⚠️ Seed skipped or failed — continuing startup') && node server.js"]
