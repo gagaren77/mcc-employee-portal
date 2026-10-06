@@ -51,6 +51,7 @@ COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.bin ./node_modules/.bin
 COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
 COPY --from=builder /app/node_modules/esbuild ./node_modules/esbuild
+COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
 # ↓ NEW: platform-specific esbuild binary
 COPY --from=builder /app/node_modules/@esbuild ./node_modules/@esbuild
 
