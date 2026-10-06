@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
-import Link from "next/link"
 import { Eye, EyeOff, Loader2, LogIn, ShieldCheck } from "lucide-react"
 
 export default function LoginPage() {
@@ -145,13 +144,10 @@ export default function LoginPage() {
         Use your company Okta account for single sign-on
       </p>
 
-      {/* Register link */}
+      {/* Account provisioning notice */}
       <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-        <p className="text-sm text-gray-500">
-          New employee?{" "}
-          <Link href="/auth/register" className="text-[#1a4a8a] font-medium hover:underline">
-            Create an account
-          </Link>
+        <p className="text-xs text-gray-400">
+          Need an account? Contact your HR or IT administrator.
         </p>
       </div>
     </div>
