@@ -1,6 +1,5 @@
-import { Calendar, MapPin, Clock, Tag } from "lucide-react"
+import { Calendar, MapPin, Clock } from "lucide-react"
 import { prisma } from "@/lib/prisma"
-import { formatDate, formatDateTime } from "@/lib/utils"
 import { auth } from "@/auth"
 
 function getCategoryStyle(category: string) {
@@ -17,12 +16,12 @@ function getCategoryStyle(category: string) {
 }
 
 export default async function EventsPage() {
-  const session = await auth()
-  const isAdmin = ["ADMIN", "HR"].includes(session?.user.role ?? "")
+  await auth() // still enforce login via layout
 
   const events = await prisma.event.findMany({
     orderBy: { startDate: "asc" },
     where: {
+      published: true,
       startDate: {
         gte: new Date(new Date().setDate(new Date().getDate() - 7)),
       },
@@ -37,7 +36,6 @@ export default async function EventsPage() {
     return (
       <div key={event.id} className="mcc-card p-4">
         <div className="flex gap-4">
-          {/* Date column */}
           <div className="flex-shrink-0 text-center w-14">
             <div className="mcc-gradient rounded-xl py-2 text-white">
               <p className="text-xs font-bold uppercase leading-none">
@@ -49,7 +47,6 @@ export default async function EventsPage() {
             </div>
           </div>
 
-          {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <h3 className="font-semibold text-gray-800">{event.title}</h3>
@@ -81,25 +78,16 @@ export default async function EventsPage() {
 
   return (
     <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Calendar className="w-6 h-6 text-[#1a4a8a]" />
-            Events & Calendar
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Upcoming events, deadlines, trainings, and company activities.
-          </p>
-        </div>
-        {isAdmin && (
-          <a href="/admin/events/new" className="mcc-btn-primary text-sm">
-            + Add Event
-          </a>
-        )}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Calendar className="w-6 h-6 text-[#1a4a8a]" />
+          Events & Calendar
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          Upcoming events, deadlines, trainings, and company activities.
+        </p>
       </div>
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-3">
         {["general", "holiday", "training", "meeting", "deadline", "social", "academic"].map((cat) => {
           const { dot } = getCategoryStyle(cat)
@@ -112,7 +100,6 @@ export default async function EventsPage() {
         })}
       </div>
 
-      {/* Upcoming events */}
       <div>
         <h2 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wide">
           Upcoming ({upcoming.length})
@@ -127,7 +114,6 @@ export default async function EventsPage() {
         )}
       </div>
 
-      {/* Past events */}
       {past.length > 0 && (
         <div>
           <h2 className="text-sm font-semibold text-gray-400 mb-3 uppercase tracking-wide">
