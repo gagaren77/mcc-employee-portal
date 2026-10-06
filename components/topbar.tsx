@@ -1,7 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
-import { Bell, LogOut, User, Settings, ChevronDown } from "lucide-react"
+import { Bell, LogOut, User, Settings, ChevronDown, Users } from "lucide-react"
 import { getInitials } from "@/lib/utils"
 import { useState } from "react"
 import Link from "next/link"
@@ -18,6 +18,7 @@ interface TopBarProps {
 
 export function TopBar({ user }: TopBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const isAdminLevel = ["ADMIN", "HR"].includes(user.role)
 
   return (
     <header className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -79,6 +80,7 @@ export function TopBar({ user }: TopBarProps) {
                   <p className="text-sm font-medium text-gray-800 truncate">{user.name}</p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
+
                 <Link
                   href="/profile"
                   onClick={() => setDropdownOpen(false)}
@@ -87,7 +89,19 @@ export function TopBar({ user }: TopBarProps) {
                   <User className="w-4 h-4 text-gray-400" />
                   My Profile
                 </Link>
-                {["ADMIN"].includes(user.role) && (
+
+                {isAdminLevel && (
+                  <Link
+                    href="/admin/users"
+                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                  >
+                    <Users className="w-4 h-4 text-gray-400" />
+                    Users
+                  </Link>
+                )}
+
+                {isAdminLevel && (
                   <Link
                     href="/admin"
                     onClick={() => setDropdownOpen(false)}
@@ -97,6 +111,7 @@ export function TopBar({ user }: TopBarProps) {
                     Admin Settings
                   </Link>
                 )}
+
                 <div className="border-t border-gray-100 mt-1" />
                 <button
                   onClick={() => signOut({ callbackUrl: "/auth/login" })}
