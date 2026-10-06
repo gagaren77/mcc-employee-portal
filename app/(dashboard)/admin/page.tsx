@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import { Shield, Users, Megaphone, Calendar, Bookmark, PlusCircle } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 
@@ -101,6 +102,12 @@ export default async function AdminPage() {
             <Users className="w-5 h-5 text-[#1a4a8a]" />
             Registered Staff
           </h2>
+          <Link
+            href="/admin/users"
+            className="text-sm font-medium text-[#1a4a8a] hover:underline"
+          >
+            Manage all users →
+          </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
