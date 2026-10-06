@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { User, Mail, Building, Briefcase, Phone, MapPin, Shield, Calendar } from "lucide-react"
 import { getInitials, formatDate } from "@/lib/utils"
 import { redirect } from "next/navigation"
+import { isExternalUser } from "@/lib/auth-helpers"
+import { ChangePasswordForm } from "./change-password-form"
 
 export default async function ProfilePage() {
   const session = await auth()
@@ -13,6 +15,8 @@ export default async function ProfilePage() {
   })
 
   if (!user) redirect("/auth/login")
+
+  const isExternal = await isExternalUser(user.id)
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -54,7 +58,7 @@ export default async function ProfilePage() {
               <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
                 Contact Information
               </h3>
-              
+
               <div className="flex items-center gap-3 text-sm text-gray-700">
                 <Mail className="w-4 h-4 text-gray-400" />
                 <span className="font-medium">Email:</span>
@@ -100,6 +104,9 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Password management */}
+      <ChangePasswordForm isExternal={isExternal} />
     </div>
   )
 }
