@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
   description: "Employee portal for Midwestern Career College staff",
   icons: {
-    icon: "/logo.png",
+    icon: "/favicon.ico",
     apple: "/logo.png",
   },
 }
