@@ -7,10 +7,14 @@ import { auth } from "@/auth"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "MCC Employee Portal | Midwestern Career College",
+  title: {
+    default: "My MCC Portal | Midwestern Career College",
+    template: "%s | My MCC Portal",
+  },
   description: "Employee portal for Midwestern Career College staff",
   icons: {
     icon: "/favicon.ico",
+    apple: "/logo.png",
   },
 }
 
