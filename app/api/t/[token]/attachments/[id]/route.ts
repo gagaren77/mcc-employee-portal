@@ -7,7 +7,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ token: s
   const { token, id } = await params
   if (!publicLinksEnabled() || token.length < 20) return new Response("Not found", { status: 404 })
 
-  const ticket = await prisma.ticket.findUnique({ where: { accessToken: token }, select: { id: true } })
+  const ticket = await prisma.ticket.findFirst({ where: { accessToken: token }, select: { id: true } })
   const att = ticket && (await prisma.ticketAttachment.findUnique({ where: { id } }))
   if (!att || att.ticketId !== ticket.id) return new Response("Not found", { status: 404 })
 

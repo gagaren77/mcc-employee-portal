@@ -13,7 +13,7 @@ import { PriorityBadge, StatusBadge } from "@/components/tickets/badges"
 export default async function PublicTicketPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
   if (token.length < 20) notFound()
-  const ticket = await prisma.ticket.findUnique({ where: { accessToken: token } })
+  const ticket = await prisma.ticket.findFirst({ where: { accessToken: token } })
   if (!ticket) notFound()
 
   // Links are closed (e.g. once everyone uses Okta): send people through the normal login instead.
