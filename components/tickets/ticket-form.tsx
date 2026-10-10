@@ -4,10 +4,13 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { CATEGORIES } from "@/lib/ticket-constants"
+import { FilePicker } from "@/components/tickets/file-picker"
+import { uploadFiles } from "@/components/tickets/upload"
 
 export function TicketForm({ defaultCategory = "" }: { defaultCategory?: string }) {
   const router = useRouter()
   const [form, setForm] = useState({ subject: "", description: "", category: defaultCategory })
+  const [files, setFiles] = useState<File[]>([])
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -25,6 +28,13 @@ export function TicketForm({ defaultCategory = "" }: { defaultCategory?: string 
       setError(data.error ?? "Could not submit ticket")
       setLoading(false)
       return
+    }
+    if (files.length) {
+      const failed = await uploadFiles(data.ticket.id, files)
+      if (failed.length) {
+        setError(`Ticket created, but these files could not be uploaded: ${failed.join(", ")}. You can add them from the ticket page.`)
+        await new Promise((r) => setTimeout(r, 3500))
+      }
     }
     router.push(`/tickets/${data.ticket.id}`)
   }
@@ -67,6 +77,7 @@ export function TicketForm({ defaultCategory = "" }: { defaultCategory?: string 
           className={`${input} resize-none`}
         />
       </div>
+      <FilePicker files={files} onChange={setFiles} onError={setError} />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <button type="submit" disabled={loading} className="mcc-btn-primary text-sm inline-flex items-center gap-2 disabled:opacity-60">
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}

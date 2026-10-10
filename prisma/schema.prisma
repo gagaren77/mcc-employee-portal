@@ -157,6 +157,7 @@ model Ticket {
   requester User?           @relation("TicketRequester", fields: [requesterId], references: [id], onDelete: SetNull)
   assignee  User?           @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   comments  TicketComment[]
+  attachments TicketAttachment[]
 
   @@index([status])
   @@index([requesterEmail])
@@ -187,4 +188,23 @@ model MailSyncState {
   updatedAt DateTime @updatedAt
 
   @@map("mail_sync_state")
+}
+
+// Files live on disk (<data volume>/attachments/<id>); only metadata is stored here.
+model TicketAttachment {
+  id           String   @id @default(cuid())
+  ticketId     String
+  commentId    String?  // null = attached to the original request
+  filename     String
+  mimeType     String
+  size         Int
+  previewable  Boolean  @default(false) // verified image/PDF (by file signature) -> safe to show inline
+  uploadedById String?
+  source       String   @default("PORTAL") // PORTAL | EMAIL
+  createdAt    DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_attachments")
 }

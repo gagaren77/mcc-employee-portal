@@ -94,6 +94,7 @@ export interface InboxMessage {
   bodyPreview: string
   body: { contentType: string; content: string }
   conversationId: string
+  hasAttachments?: boolean
   internetMessageHeaders?: { name: string; value: string }[]
 }
 
@@ -153,7 +154,7 @@ export async function listFolderMessages(folderId: string, since: string, mailbo
     $filter: `receivedDateTime gt ${since}`,
     $orderby: "receivedDateTime asc",
     $top: String(top),
-    $select: "id,internetMessageId,subject,receivedDateTime,from,bodyPreview,body,conversationId,internetMessageHeaders",
+    $select: "id,internetMessageId,subject,receivedDateTime,from,bodyPreview,body,conversationId,hasAttachments,internetMessageHeaders",
   })
   const res = await graphFetch(`/users/${encodeURIComponent(mailbox)}/mailFolders/${folderId}/messages?${params}`)
   if (!res.ok) {
@@ -164,3 +165,27 @@ export async function listFolderMessages(folderId: string, since: string, mailbo
 
 export const listInboxMessages = (since: string, mailbox = SUPPORT_MAILBOX, top = 50) =>
   listFolderMessages("inbox", since, mailbox, top)
+
+export interface MessageAttachment {
+  id: string
+  name: string
+  contentType: string
+  size: number
+  isInline: boolean
+  "@odata.type": string
+}
+
+export async function listMessageAttachments(messageId: string, mailbox = SUPPORT_MAILBOX): Promise<MessageAttachment[]> {
+  const res = await graphFetch(
+    `/users/${encodeURIComponent(mailbox)}/messages/${messageId}/attachments?$select=id,name,contentType,size,isInline`
+  )
+  if (!res.ok) throw new Error(`Graph list attachments failed: ${res.status} ${(await res.text()).slice(0, 300)}`)
+  return ((await res.json()) as { value: MessageAttachment[] }).value
+}
+
+/** Raw bytes of a file attachment. */
+export async function getAttachmentBytes(messageId: string, attachmentId: string, mailbox = SUPPORT_MAILBOX): Promise<Buffer> {
+  const res = await graphFetch(`/users/${encodeURIComponent(mailbox)}/messages/${messageId}/attachments/${attachmentId}/$value`)
+  if (!res.ok) throw new Error(`Graph attachment download failed: ${res.status}`)
+  return Buffer.from(await res.arrayBuffer())
+}

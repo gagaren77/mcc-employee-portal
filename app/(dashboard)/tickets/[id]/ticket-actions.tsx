@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/ticket-constants"
+import { FilePicker } from "@/components/tickets/file-picker"
+import { uploadFiles } from "@/components/tickets/upload"
 
 interface Agent {
   id: string
@@ -15,6 +17,7 @@ export function ReplyBox({ ticketId, staff }: { ticketId: string; staff: boolean
   const router = useRouter()
   const [body, setBody] = useState("")
   const [internal, setInternal] = useState(false)
+  const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -28,8 +31,16 @@ export function ReplyBox({ ticketId, staff }: { ticketId: string; staff: boolean
       body: JSON.stringify({ body, isInternal: internal }),
     })
     const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      setLoading(false)
+      return setError(data.error ?? "Could not send")
+    }
+    if (files.length) {
+      const failed = await uploadFiles(ticketId, files, data.commentId)
+      if (failed.length) setError(`Reply sent, but these files could not be uploaded: ${failed.join(", ")}`)
+    }
     setLoading(false)
-    if (!res.ok) return setError(data.error ?? "Could not send")
+    setFiles([])
     setBody("")
     setInternal(false)
     router.refresh()
@@ -44,6 +55,7 @@ export function ReplyBox({ ticketId, staff }: { ticketId: string; staff: boolean
         placeholder={internal ? "Internal note (only IT/Admin can see this)…" : staff ? "Reply to the requester (they'll get an email)…" : "Add a reply…"}
         className={`w-full px-3 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a8a] resize-none ${internal ? "border-amber-300 bg-amber-50" : "border-gray-200"}`}
       />
+      <FilePicker files={files} onChange={setFiles} onError={setError} />
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="flex items-center justify-between">
         {staff ? (
