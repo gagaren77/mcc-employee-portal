@@ -96,10 +96,14 @@ export function StaffControls({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
   const [pendingStatus, setPendingStatus] = useState<string | null>(null)
+  const [note, setNote] = useState("")
 
   // Resolving/closing emails the requester (and approvers), so ask first.
   function changeStatus(next: string) {
-    if (next === "RESOLVED" || next === "CLOSED") setPendingStatus(next)
+    if (next === "RESOLVED" || next === "CLOSED") {
+      setNote("")
+      setPendingStatus(next)
+    }
     else patch({ status: next })
   }
 
@@ -162,8 +166,17 @@ export function StaffControls({
               Mark this ticket as {pendingStatus === "CLOSED" ? "Closed" : "Resolved"}?
             </h4>
             <p className="mt-2 text-sm text-gray-600">
-              The requester will get an email{approvalsApproved ? ", and so will the people who approved it" : ""}.
+              The requester will get an email{approvalsApproved ? ", and so will the people who approved it" : ""}. Your note is added to the ticket and included in the email.
             </p>
+            <label className="mt-3 block text-xs font-medium text-gray-700">Add a note (optional)</label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              maxLength={2000}
+              placeholder="e.g. Closing because we haven't heard back in a while. Reply to reopen."
+              className="mt-1 w-full resize-none rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a8a]"
+            />
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" autoFocus onClick={() => setPendingStatus(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                 Cancel
@@ -173,7 +186,7 @@ export function StaffControls({
                 onClick={() => {
                   const next = pendingStatus
                   setPendingStatus(null)
-                  patch({ status: next })
+                  patch({ status: next, ...(note.trim() ? { comment: note.trim() } : {}) })
                 }}
                 className="mcc-btn-primary text-sm"
               >

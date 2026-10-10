@@ -10,6 +10,7 @@ const Schema = z.object({
   priority: z.enum(PRIORITIES).optional(),
   category: z.enum(CATEGORIES).optional(),
   assigneeId: z.string().nullable().optional(),
+  comment: z.string().trim().max(2000).optional(), // optional note shown to the requester when resolving/closing
 })
 
 // Staff only: change status / priority / assignee.
@@ -25,6 +26,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (!ticket) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
   const { status, priority, assigneeId, category } = parsed.data
+  const closingNote = parsed.data.comment || undefined
   const data: Record<string, unknown> = { lastActivityAt: new Date() }
   const notes: string[] = []
   let newAssignee: { email: string; name: string | null } | null = null
@@ -62,9 +64,23 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (newAssignee) void notifyAssignee(updated, updated.description, newAssignee, session.user.name)
 
   if (status && status !== ticket.status && (status === "RESOLVED" || status === "CLOSED")) {
-    void notifyRequesterStatus(updated, status)
+    // Optional note from IT, kept on the ticket and included in the status emails (no separate reply email).
+    if (closingNote) {
+      await prisma.ticketComment.create({
+        data: {
+          ticketId: id,
+          authorId: session.user.id,
+          authorName: session.user.name,
+          authorEmail: session.user.email,
+          body: closingNote,
+          isInternal: false,
+          source: "PORTAL",
+        },
+      })
+    }
+    void notifyRequesterStatus(updated, status, closingNote, session.user.name)
     // Approvers hear once: on Resolved, or on Closed if it wasn't resolved first.
-    if (status === "RESOLVED" || ticket.status !== "RESOLVED") void notifyApproversDone(updated, status)
+    if (status === "RESOLVED" || ticket.status !== "RESOLVED") void notifyApproversDone(updated, status, closingNote, session.user.name)
   }
   return NextResponse.json({ ok: true })
 }
