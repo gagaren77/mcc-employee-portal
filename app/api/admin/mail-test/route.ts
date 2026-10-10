@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { z } from "zod"
 import { sendTestEmail } from "@/lib/mailer"
-import { graphConfigured, listInboxMessages } from "@/lib/graph"
+import { graphConfigured, listInboxMessages, resolveFolders } from "@/lib/graph"
 
 // Admin-only diagnostics for the Microsoft 365 mail connection.
 //   GET  -> is Graph configured? can we read the support inbox? (returns counts only, no message content)
@@ -19,7 +19,15 @@ export async function GET() {
   try {
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
     const msgs = await listInboxMessages(since, undefined, 10)
-    return NextResponse.json({ configured: true, canRead: true, messagesLast24h: msgs.length })
+    const names = (process.env.MAILBOX_FOLDERS || "Inbox,Staff,Students").split(",").map((x) => x.trim()).filter(Boolean)
+    const { found, missing } = await resolveFolders(names)
+    return NextResponse.json({
+      configured: true,
+      canRead: true,
+      inboxMessagesLast24h: msgs.length,
+      watchedFolders: found.map((f) => f.displayName),
+      missingFolders: missing,
+    })
   } catch (e) {
     return NextResponse.json({ configured: true, canRead: false, error: (e as Error).message }, { status: 502 })
   }

@@ -1,14 +1,32 @@
 import { prisma } from "@/lib/prisma"
-import { graphConfigured, listInboxMessages, SUPPORT_MAILBOX, type InboxMessage } from "@/lib/graph"
+import { graphConfigured, listFolderMessages, resolveFolders, SUPPORT_MAILBOX, type InboxMessage } from "@/lib/graph"
 import { createTicket } from "@/lib/tickets"
 import { notifyRequesterReceived } from "@/lib/ticket-notify"
 
-const STATE_KEY = "support_inbox_since"
+const INBOX_STATE_KEY = "support_inbox_since" // kept from v1 so the Inbox cursor survives
+const stateKey = (folderName: string) => (folderName.toLowerCase() === "inbox" ? INBOX_STATE_KEY : `support_since:${folderName.toLowerCase()}`)
+
+// Folders (Inbox or its subfolders) whose mail becomes tickets. Vendor/automated folders are simply not listed.
+const FOLDERS = () => (process.env.MAILBOX_FOLDERS || "Inbox,Staff,Students").split(",").map((x) => x.trim()).filter(Boolean)
+
+// Safety net for vendor mail that sits in the Inbox before a rule moves it. Domain or full address; subdomains match.
+const IGNORE_SENDERS = () =>
+  `amazon.com,godaddy.com,splashtop.com,ui.com,ubnt.com,${process.env.MAIL_IGNORE_SENDERS || ""}`
+    .split(",")
+    .map((x) => x.trim().toLowerCase())
+    .filter(Boolean)
+
+function senderIgnored(addr: string): boolean {
+  const host = addr.split("@")[1] ?? ""
+  return IGNORE_SENDERS().some((i) => addr === i || host === i || host.endsWith("." + i))
+}
 let running = false
 
 export interface SyncResult {
   ok: boolean
   initialized?: boolean
+  folders?: string[]
+  missingFolders?: string[]
   created: number
   commented: number
   skipped: number
@@ -42,6 +60,7 @@ function stripQuoted(text: string): string {
 function isAutomated(m: InboxMessage): boolean {
   const addr = m.from?.emailAddress.address.toLowerCase() ?? ""
   if (!addr || addr === SUPPORT_MAILBOX.toLowerCase()) return true
+  if (senderIgnored(addr)) return true
   if (/(mailer-daemon|postmaster|no-?reply|do-?not-?reply)@/.test(addr)) return true
   if (/^(automatic reply|auto:|undeliverable|delivery status|out of office)/i.test((m.subject ?? "").trim())) return true
   for (const h of m.internetMessageHeaders ?? []) {
@@ -128,30 +147,40 @@ export async function syncSupportInbox(): Promise<SyncResult> {
   if (running) return { ...result, ok: false, error: "Sync already running" }
   running = true
   try {
-    const state = await prisma.mailSyncState.findUnique({ where: { key: STATE_KEY } })
-    if (!state) {
-      await prisma.mailSyncState.create({ data: { key: STATE_KEY, value: new Date().toISOString() } })
-      return { ...result, initialized: true }
-    }
+    const { found, missing } = await resolveFolders(FOLDERS())
+    if (missing.length) console.warn("[mail-sync] folders not found:", missing.join(", "))
+    result.folders = found.map((f) => f.displayName)
+    result.missingFolders = missing
 
-    let since = state.value
-    for (let page = 0; page < 5; page++) {
-      // 5s overlap so same-second arrivals are never missed; duplicates are skipped via message-id
-      const msgs = await listInboxMessages(new Date(Date.parse(since) - 5000).toISOString(), SUPPORT_MAILBOX, 50)
-      if (msgs.length === 0) break
-      for (const m of msgs) {
-        try {
-          const r = await handleMessage(m)
-          if (r !== "skipped") result[r]++
-          else result.skipped++
-        } catch (e) {
-          console.error("[mail-sync] message failed:", m.id, (e as Error).message)
-          result.skipped++
-        }
-        since = m.receivedDateTime
+    for (const folder of found) {
+      const key = stateKey(folder.displayName)
+      const state = await prisma.mailSyncState.findUnique({ where: { key } })
+      if (!state) {
+        // First time we see this folder: start from now, never backfill old mail.
+        await prisma.mailSyncState.create({ data: { key, value: new Date().toISOString() } })
+        result.initialized = true
+        continue
       }
-      await prisma.mailSyncState.update({ where: { key: STATE_KEY }, data: { value: since } })
-      if (msgs.length < 50) break
+
+      let since = state.value
+      for (let page = 0; page < 5; page++) {
+        // 5s overlap so same-second arrivals are never missed; duplicates are skipped via message-id
+        const msgs = await listFolderMessages(folder.id, new Date(Date.parse(since) - 5000).toISOString(), SUPPORT_MAILBOX, 50)
+        if (msgs.length === 0) break
+        for (const m of msgs) {
+          try {
+            const r = await handleMessage(m)
+            if (r !== "skipped") result[r]++
+            else result.skipped++
+          } catch (e) {
+            console.error("[mail-sync] message failed:", m.id, (e as Error).message)
+            result.skipped++
+          }
+          since = m.receivedDateTime
+        }
+        await prisma.mailSyncState.update({ where: { key }, data: { value: since } })
+        if (msgs.length < 50) break
+      }
     }
     return result
   } catch (e) {

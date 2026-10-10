@@ -97,18 +97,70 @@ export interface InboxMessage {
   internetMessageHeaders?: { name: string; value: string }[]
 }
 
-/** Newest-first inbox messages received after `since` (ISO string). Read-only. */
-export async function listInboxMessages(since: string, mailbox = SUPPORT_MAILBOX, top = 50): Promise<InboxMessage[]> {
+export interface MailFolder {
+  id: string
+  displayName: string
+}
+
+let folderCache: { at: number; mailbox: string; map: Map<string, MailFolder> } | null = null
+
+/** Inbox plus every subfolder (up to 3 levels deep), keyed by lower-cased display name. */
+async function loadFolders(mailbox: string): Promise<Map<string, MailFolder>> {
+  if (folderCache && folderCache.mailbox === mailbox && Date.now() - folderCache.at < 10 * 60_000) return folderCache.map
+  const map = new Map<string, MailFolder>()
+  const base = `/users/${encodeURIComponent(mailbox)}/mailFolders`
+
+  const rootRes = await graphFetch(`${base}/inbox?$select=id,displayName`)
+  if (!rootRes.ok) throw new Error(`Graph inbox lookup failed: ${rootRes.status} ${(await rootRes.text()).slice(0, 300)}`)
+  const root = (await rootRes.json()) as MailFolder
+  map.set("inbox", { id: root.id, displayName: "Inbox" })
+
+  let level: MailFolder[] = [root]
+  for (let depth = 0; depth < 3 && level.length; depth++) {
+    const next: MailFolder[] = []
+    for (const parent of level) {
+      const res = await graphFetch(`${base}/${parent.id}/childFolders?$top=100&$select=id,displayName`)
+      if (!res.ok) throw new Error(`Graph child folders failed: ${res.status} ${(await res.text()).slice(0, 300)}`)
+      const kids = ((await res.json()) as { value: MailFolder[] }).value
+      for (const k of kids) {
+        const key = k.displayName.toLowerCase()
+        if (!map.has(key)) map.set(key, k) // first match wins if names repeat
+        next.push(k)
+      }
+    }
+    level = next
+  }
+  folderCache = { at: Date.now(), mailbox, map }
+  return map
+}
+
+/** Looks up folders by display name ("Inbox" or any subfolder of it). */
+export async function resolveFolders(names: string[], mailbox = SUPPORT_MAILBOX): Promise<{ found: MailFolder[]; missing: string[] }> {
+  const map = await loadFolders(mailbox)
+  const found: MailFolder[] = []
+  const missing: string[] = []
+  for (const n of names) {
+    const f = map.get(n.trim().toLowerCase())
+    if (f) found.push(f)
+    else missing.push(n)
+  }
+  return { found, missing }
+}
+
+/** Oldest-first messages in a folder received after `since` (ISO string). Read-only. */
+export async function listFolderMessages(folderId: string, since: string, mailbox = SUPPORT_MAILBOX, top = 50): Promise<InboxMessage[]> {
   const params = new URLSearchParams({
     $filter: `receivedDateTime gt ${since}`,
     $orderby: "receivedDateTime asc",
     $top: String(top),
     $select: "id,internetMessageId,subject,receivedDateTime,from,bodyPreview,body,conversationId,internetMessageHeaders",
   })
-  const res = await graphFetch(`/users/${encodeURIComponent(mailbox)}/mailFolders/inbox/messages?${params}`)
+  const res = await graphFetch(`/users/${encodeURIComponent(mailbox)}/mailFolders/${folderId}/messages?${params}`)
   if (!res.ok) {
     throw new Error(`Graph list messages failed: ${res.status} ${(await res.text()).slice(0, 500)}`)
   }
-  const json = (await res.json()) as { value: InboxMessage[] }
-  return json.value
+  return ((await res.json()) as { value: InboxMessage[] }).value
 }
+
+export const listInboxMessages = (since: string, mailbox = SUPPORT_MAILBOX, top = 50) =>
+  listFolderMessages("inbox", since, mailbox, top)
