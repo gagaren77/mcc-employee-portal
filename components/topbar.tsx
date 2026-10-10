@@ -1,7 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
-import { Bell, LogOut, User, Settings, ChevronDown, Users, Calendar } from "lucide-react"
+import { Bell, LogOut, User, Settings, ChevronDown, Users, Calendar, Ticket } from "lucide-react"
 import { getInitials } from "@/lib/utils"
 import { useState } from "react"
 import Link from "next/link"
@@ -88,6 +88,15 @@ export function TopBar({ user }: TopBarProps) {
                 >
                   <User className="w-4 h-4 text-gray-400" />
                   My Profile
+                </Link>
+
+                <Link
+                  href="/tickets"
+                  onClick={() => setDropdownOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Ticket className="w-4 h-4 text-gray-400" />
+                  My Tickets
                 </Link>
 
                 {isAdminLevel && (
