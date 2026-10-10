@@ -3,13 +3,8 @@ import { mkdir, writeFile, readFile } from "node:fs/promises"
 import { prisma } from "@/lib/prisma"
 import { MAX_ATTACHMENT_BYTES, isBlockedFile, extOf } from "@/lib/ticket-constants"
 
-/** Directory next to the SQLite file (the persistent Docker volume in production), or ATTACHMENTS_DIR. */
-export function attachmentsDir(): string {
-  if (process.env.ATTACHMENTS_DIR) return process.env.ATTACHMENTS_DIR
-  const url = (process.env.DATABASE_URL || "file:./prisma/dev.db").replace(/^file:/, "")
-  const abs = path.isAbsolute(url) ? url : path.resolve(process.cwd(), "prisma", url)
-  return path.join(path.dirname(abs), "attachments")
-}
+export { attachmentsDir } from "@/lib/attachments-path"
+import { attachmentsDir } from "@/lib/attachments-path"
 const filePath = (id: string) => path.join(attachmentsDir(), id)
 
 /** Identify previewable types by their file signature, never by the claimed type or extension. */

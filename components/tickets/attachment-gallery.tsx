@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Download, FileText, FileSpreadsheet, File as FileIcon, X, Eye } from "lucide-react"
-import { formatBytes } from "@/lib/ticket-constants"
+import { formatBytes, isOfficePreviewable } from "@/lib/ticket-constants"
 
 export interface AttachmentView {
   id: string
@@ -14,6 +14,9 @@ export interface AttachmentView {
 
 const isImage = (a: AttachmentView) => a.previewable && a.mimeType.startsWith("image/")
 const isPdf = (a: AttachmentView) => a.previewable && a.mimeType === "application/pdf"
+// Office-style files are converted to PDF on the server for viewing.
+const isOffice = (a: AttachmentView) => !a.previewable && isOfficePreviewable(a.filename)
+const canPreview = (a: AttachmentView) => isPdf(a) || isOffice(a)
 
 function iconFor(a: AttachmentView) {
   if (/sheet|excel|csv/.test(a.mimeType)) return FileSpreadsheet
@@ -23,6 +26,7 @@ function iconFor(a: AttachmentView) {
 
 export function AttachmentGallery({ attachments }: { attachments: AttachmentView[] }) {
   const [open, setOpen] = useState<AttachmentView | null>(null)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -41,7 +45,7 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
         <div className="flex flex-wrap gap-2">
           {images.map((a) => (
             <div key={a.id} className="group relative">
-              <button type="button" onClick={() => setOpen(a)} className="block rounded-lg overflow-hidden border border-gray-200 bg-gray-50" title={a.filename}>
+              <button type="button" onClick={() => { setLoaded(true); setOpen(a) }} className="block rounded-lg overflow-hidden border border-gray-200 bg-gray-50" title={a.filename}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/api/attachments/${a.id}`} alt={a.filename} loading="lazy" className="h-24 w-32 object-cover" />
               </button>
@@ -66,8 +70,8 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
                 <Icon className="w-4 h-4 text-[#1a4a8a] flex-shrink-0" />
                 <span className="truncate max-w-[14rem]" title={a.filename}>{a.filename}</span>
                 <span className="text-xs text-gray-400 flex-shrink-0">{formatBytes(a.size)}</span>
-                {isPdf(a) && (
-                  <button type="button" onClick={() => setOpen(a)} className="text-xs text-[#1a4a8a] hover:underline inline-flex items-center gap-1">
+                {canPreview(a) && (
+                  <button type="button" onClick={() => { setLoaded(false); setOpen(a) }} className="text-xs text-[#1a4a8a] hover:underline inline-flex items-center gap-1">
                     <Eye className="w-3.5 h-3.5" /> Preview
                   </button>
                 )}
@@ -94,8 +98,19 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
             </div>
           </div>
           <div className="flex-1 min-h-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-            {isPdf(open) ? (
-              <iframe src={`/api/attachments/${open.id}`} title={open.filename} className="w-full h-full bg-white rounded-lg" />
+            {canPreview(open) ? (
+              <div className="relative w-full h-full">
+                {!loaded && isOffice(open) && (
+                  <p className="absolute inset-0 flex items-center justify-center text-white/80 text-sm">Preparing preview… the first view of a file can take a few seconds.</p>
+                )}
+                <iframe
+                  src={isOffice(open) ? `/api/attachments/${open.id}?preview=1` : `/api/attachments/${open.id}`}
+                  title={open.filename}
+                  onLoad={() => setLoaded(true)}
+                  className="relative w-full h-full bg-white rounded-lg"
+                  style={{ opacity: loaded || !isOffice(open) ? 1 : 0 }}
+                />
+              </div>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`/api/attachments/${open.id}`} alt={open.filename} className="max-w-full max-h-full object-contain rounded-lg bg-white" />

@@ -44,3 +44,7 @@ export function formatBytes(n: number) {
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`
   return `${(n / 1024 / 1024).toFixed(1)} MB`
 }
+
+// Word/Excel/PowerPoint-style files we can show as a PDF preview (converted server-side with LibreOffice).
+export const OFFICE_PREVIEW_EXTENSIONS = ["doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt", "ods", "odp", "rtf", "txt", "csv"]
+export const isOfficePreviewable = (name: string) => OFFICE_PREVIEW_EXTENSIONS.includes(extOf(name))

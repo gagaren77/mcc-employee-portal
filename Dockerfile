@@ -31,6 +31,11 @@ WORKDIR /app
 
 # Install openssl, libc6-compat, and su-exec (for privilege dropping in entrypoint)
 RUN apk add --no-cache openssl libc6-compat su-exec
+# LibreOffice (headless) converts Word/Excel/PowerPoint attachments to PDF for in-portal preview.
+# Adds a few hundred MB to the image. Remove this line to disable previews (downloads keep working).
+# Non-fatal on purpose: if this fails the app still builds and previews fall back to "Download".
+RUN apk add --no-cache libreoffice-writer libreoffice-calc libreoffice-impress font-liberation font-dejavu fontconfig \
+    || echo "WARNING: LibreOffice install failed - Office previews disabled"
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
