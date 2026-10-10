@@ -17,6 +17,8 @@ services:
       - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
       - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
       - MAILBOX_SUPPORT=${MAILBOX_SUPPORT:-techsupport@mccollege.edu}
+      - MAILBOX_FOLDERS=${MAILBOX_FOLDERS:-Inbox,Staff,Students}
+      - MAIL_IGNORE_SENDERS=${MAIL_IGNORE_SENDERS:-}
       # Okta SSO — uncomment when ready
       # - AUTH_OKTA_ID=${AUTH_OKTA_ID}
       # - AUTH_OKTA_SECRET=${AUTH_OKTA_SECRET}
