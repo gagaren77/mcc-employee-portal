@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 import bcrypt from "bcryptjs"
+import { randomBytes } from "node:crypto"
 
 const prisma = new PrismaClient()
 
@@ -62,7 +63,10 @@ async function main() {
   console.log("🌱 First-time seed — populating database...")
 
   // ─── Admin user ────────────────────────────────────────
-  const adminPassword = await bcrypt.hash("Admin@MCC2024!", 12)
+  // No well-known passwords: use INITIAL_ADMIN_PASSWORD if set, otherwise a random one that is printed once in the log.
+  const initialAdmin = process.env.INITIAL_ADMIN_PASSWORD || randomBytes(12).toString("base64url")
+  if (!process.env.INITIAL_ADMIN_PASSWORD) console.log(`🔑 Initial admin password (shown once, change it after signing in): ${initialAdmin}`)
+  const adminPassword = await bcrypt.hash(initialAdmin, 12)
   const admin = await prisma.user.upsert({
     where: { email: "admin@mccollege.edu" },
     update: {
@@ -83,7 +87,7 @@ async function main() {
   console.log("✅ Admin user:", admin.email)
 
   // ─── Sample employees ──────────────────────────────────
-  const employeePassword = await bcrypt.hash("Employee@123!", 12)
+  const employeePassword = await bcrypt.hash(randomBytes(24).toString("base64url"), 12) // sample accounts cannot be signed into until an admin resets the password
   const employees = [
     { name: "Sarah Johnson", email: "s.johnson@mccollege.edu", department: "Human Resources", title: "HR Director", role: "HR" },
     { name: "Michael Chen", email: "m.chen@mccollege.edu", department: "Information Technology", title: "IT Manager", role: "IT" },
@@ -232,9 +236,7 @@ async function main() {
   console.log("✅ HR Resources seeded")
 
   console.log("\n🎉 Database seeded successfully!")
-  console.log("\n📋 Login credentials:")
-  console.log("   Admin: admin@mccollege.edu / Admin@MCC2024!")
-  console.log("   Employee: s.johnson@mccollege.edu / Employee@123!")
+  console.log("\n📋 Sign in as admin@mccollege.edu (see the initial admin password above), then change it.")
 }
 
 main()
