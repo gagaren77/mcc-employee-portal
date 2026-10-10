@@ -11,7 +11,7 @@ export function emailLayout(title: string, bodyHtml: string): string {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
 <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:12px;overflow:hidden">
 <tr><td style="background:#0d2d5c;padding:14px 24px"><table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#fff;border-radius:8px;padding:3px;width:30px;height:36px;line-height:0"><img src="${esc(appUrl("/logo.png"))}" alt="MCC" width="30" height="36" style="display:block;border:0"></td>
+<td bgcolor="#ffffff" style="background:#ffffff;border-radius:8px;padding:5px"><img src="${esc(appUrl("/logo.png"))}" alt="MCC" width="34" height="40" style="display:block;border:0;width:34px;height:40px"></td>
 <td style="padding-left:12px;color:#fff;font-size:16px;font-weight:600">My MCC Portal &middot; IT Department</td>
 </tr></table></td></tr>
 <tr><td style="padding:24px"><h2 style="margin:0 0 12px;font-size:18px">${esc(title)}</h2>${bodyHtml}</td></tr>
