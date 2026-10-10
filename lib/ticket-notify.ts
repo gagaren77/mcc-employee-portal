@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma"
 import { sendMail, SUPPORT_MAILBOX } from "@/lib/graph"
 import { emailLayout, emailButton } from "@/lib/mailer"
 import { appUrl } from "@/lib/app-url"
@@ -78,6 +79,33 @@ export const notifyRequesterStatus = (t: T, status: string) =>
           emailButton(href, "View ticket")
       ),
     })
+  })
+
+/** Tell the people who approved this ticket that the work is finished (once per ticket, per approver). */
+export const notifyApproversDone = (t: T, status: string) =>
+  safe("approvers-done", async () => {
+    const approvals = await prisma.ticketApproval.findMany({ where: { ticketId: t.id, status: "APPROVED" } })
+    if (approvals.length === 0) return
+    const href = await ticketLink(t)
+    const seen = new Set<string>([t.requesterEmail.toLowerCase()]) // the requester already gets their own email
+    for (const a of approvals) {
+      const to = a.approverEmail.toLowerCase()
+      if (seen.has(to)) continue
+      seen.add(to)
+      const word = status === "CLOSED" ? "closed" : "resolved"
+      await sendMail({
+        to: [a.approverEmail],
+        subject: `${tag(t)} Completed: ${t.subject}`,
+        html: emailLayout(
+          `${ticketNumber(t.number)} is ${word}`,
+          para(`Hi${firstName(a.approverName)},`) +
+            para(`The request you approved has been ${word} by the IT Department.`) +
+            quote(t.subject) +
+            para("If something doesn't look right, just reply to this email.") +
+            emailButton(href, "View ticket")
+        ),
+      })
+    }
   })
 
 /**

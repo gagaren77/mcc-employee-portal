@@ -3,7 +3,7 @@ import { z } from "zod"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { addSystemNote, CATEGORIES, isStaff, PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/tickets"
-import { notifyAssignee, notifyRequesterStatus } from "@/lib/ticket-notify"
+import { notifyAssignee, notifyApproversDone, notifyRequesterStatus } from "@/lib/ticket-notify"
 
 const Schema = z.object({
   status: z.enum(STATUSES).optional(),
@@ -63,6 +63,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   if (status && status !== ticket.status && (status === "RESOLVED" || status === "CLOSED")) {
     void notifyRequesterStatus(updated, status)
+    // Approvers hear once: on Resolved, or on Closed if it wasn't resolved first.
+    if (status === "RESOLVED" || ticket.status !== "RESOLVED") void notifyApproversDone(updated, status)
   }
   return NextResponse.json({ ok: true })
 }
