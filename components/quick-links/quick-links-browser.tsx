@@ -30,24 +30,22 @@ function Tile({ link }: { link: TileLink }) {
   const g = look(link.category)
   const body = (
     <>
-      <div className="flex items-start justify-between">
-        <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${g.chip}`}>
-          <g.Icon className="h-5 w-5" />
-        </span>
-        {kind === "internal" && <ArrowRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-[#1a4a8a]" />}
-        {kind === "external" && <ArrowUpRight className="h-4 w-4 text-gray-300 transition-colors group-hover:text-[#1a4a8a]" />}
-      </div>
-      <div className="mt-3 min-w-0">
-        <p className={`truncate text-sm font-semibold ${kind === "unset" ? "text-gray-400" : "text-gray-900 group-hover:text-[#1a4a8a]"}`}>{link.title}</p>
-        <p className="mt-0.5 line-clamp-2 min-h-[2rem] text-xs leading-4 text-gray-500">{kind === "unset" ? "Not set up yet" : link.description || " "}</p>
-      </div>
+      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${g.chip}`}>
+        <g.Icon className="h-5 w-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className={`block truncate text-sm font-semibold ${kind === "unset" ? "text-gray-400" : "text-gray-900 group-hover:text-[#1a4a8a]"}`}>{link.title}</span>
+        <span className="block truncate text-xs text-gray-500">{kind === "unset" ? "Not set up yet" : link.description || (kind === "internal" ? "Portal page" : "Opens in a new tab")}</span>
+      </span>
+      {kind === "internal" && <ArrowRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-[#1a4a8a]" />}
+      {kind === "external" && <ArrowUpRight className="h-4 w-4 shrink-0 text-gray-300 group-hover:text-[#1a4a8a]" />}
     </>
   )
-  const cls = `group flex flex-col rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition-all ${g.hover}`
+  const cls = "group flex h-[68px] items-center gap-3 rounded-xl border border-gray-100 bg-gray-50/60 px-3 transition-colors"
   if (kind === "unset") return <div className={`${cls} opacity-60`}>{body}</div>
-  if (kind === "internal") return <Link href={link.url} className={`${cls} hover:-translate-y-0.5 hover:shadow-md`}>{body}</Link>
+  if (kind === "internal") return <Link href={link.url} className={`${cls} hover:border-[#1a4a8a]/30 hover:bg-white hover:shadow-sm`}>{body}</Link>
   return (
-    <a href={link.url} target="_blank" rel="noopener noreferrer" className={`${cls} hover:-translate-y-0.5 hover:shadow-md`}>
+    <a href={link.url} target="_blank" rel="noopener noreferrer" className={`${cls} hover:border-[#1a4a8a]/30 hover:bg-white hover:shadow-sm`}>
       {body}
     </a>
   )
@@ -72,7 +70,7 @@ export function QuickLinksBrowser({ links }: { links: TileLink[] }) {
   const chip = (active: boolean) => `rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${active ? "bg-[#1a4a8a] text-white" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"}`
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative w-full sm:w-72">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -101,13 +99,15 @@ export function QuickLinksBrowser({ links }: { links: TileLink[] }) {
       {groups.map(({ category, items }) => {
         const g = look(category)
         return (
-          <section key={category}>
-            <div className="mb-3 flex items-center gap-2">
-              <span className={`h-5 w-1 rounded-full ${g.bar}`} />
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-700">{CATEGORY_LABEL[category] ?? category}</h2>
-              <span className="text-xs text-gray-400">{items.length}</span>
+          <section key={category} className="mcc-card overflow-hidden">
+            <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-3.5">
+              <span className={`flex h-8 w-8 items-center justify-center rounded-lg ${g.chip}`}>
+                <g.Icon className="h-4 w-4" />
+              </span>
+              <h2 className="text-sm font-bold text-gray-900">{CATEGORY_LABEL[category] ?? category}</h2>
+              <span className="ml-auto rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">{items.length}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3">
               {items.map((l) => (
                 <Tile key={l.id} link={l} />
               ))}
