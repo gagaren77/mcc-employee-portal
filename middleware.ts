@@ -11,7 +11,8 @@ export default auth((req) => {
   // Token-protected pages/APIs that must work without a login (emailed approval links and ticket-tracking links).
   // Each route validates its own unguessable token.
   const isTokenLink = ["/t/", "/approve/", "/api/t/", "/api/approvals/"].some((p) => nextUrl.pathname.startsWith(p))
-  const isPublic = isAuthPage || isApiAuth || isTokenLink
+  const isHealth = nextUrl.pathname === "/api/health" // healthchecks have no session
+  const isPublic = isAuthPage || isApiAuth || isTokenLink || isHealth
 
   // Allow public routes through
   if (isPublic) return NextResponse.next()

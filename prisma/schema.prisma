@@ -149,7 +149,7 @@ model Ticket {
   requesterName   String?
   assigneeId      String?
   sourceMessageId String?   @unique            // Internet-Message-ID of the originating email (dedupe)
-  accessToken     String?   @unique            // unguessable token for the no-login ticket link (/t/<token>)
+  accessToken     String?                      // unguessable (192-bit random) token for the no-login ticket link (/t/<token>); plain index, not unique, so `db push` needs no --accept-data-loss
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   resolvedAt      DateTime?
@@ -163,6 +163,7 @@ model Ticket {
 
   @@index([status])
   @@index([requesterEmail])
+  @@index([accessToken])
   @@map("tickets")
 }
 
