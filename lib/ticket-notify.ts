@@ -135,8 +135,8 @@ export const notifyApprover = (
     })
   })
 
-/** Tell the requester and the support team that an approver decided. */
-export const notifyDecision = (t: T, approverName: string, decision: "APPROVED" | "DECLINED", comment?: string | null) =>
+/** Tell the requester, the support team and (as a receipt) the approver that a decision was recorded. */
+export const notifyDecision = (t: T, approverName: string, decision: "APPROVED" | "DECLINED", comment?: string | null, approverEmail?: string) =>
   safe("decision", async () => {
     const href = await ticketLink(t)
     const word = decision === "APPROVED" ? "approved" : "declined"
@@ -155,4 +155,20 @@ export const notifyDecision = (t: T, approverName: string, decision: "APPROVED" 
       subject: `${tag(t)} ${decision === "APPROVED" ? "Approved" : "Declined"} by ${approverName}: ${t.subject}`,
       html: emailLayout(`Approval ${word}`, body.replace(href, appUrl(`/tickets/${t.id}`))),
     })
+    // Receipt for the approver, with the link to keep following the ticket.
+    if (approverEmail) {
+      await sendMail({
+        to: [approverEmail],
+        subject: `${tag(t)} You ${word}: ${t.subject}`,
+        html: emailLayout(
+          decision === "APPROVED" ? "Thanks — your approval is recorded" : "Thanks — your decision is recorded",
+          para(`Hi${firstName(approverName)},`) +
+            para(`This confirms that you <b>${word}</b> the request below. IT has been notified${decision === "APPROVED" ? " and will take it from here" : ""}.`) +
+            quote(t.subject) +
+            (comment ? para("Your comment:") + quote(comment) : "") +
+            para("You can follow the progress of this ticket any time with the link below. If you need to change anything, just reply to this email.") +
+            emailButton(href, "Track this ticket")
+        ),
+      })
+    }
   })
