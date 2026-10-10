@@ -1,6 +1,7 @@
 import { Calendar, MapPin, Clock } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
+import { APP_TIMEZONE } from "@/lib/utils"
 
 function getCategoryStyle(category: string) {
   const styles: Record<string, { dot: string; badge: string }> = {
@@ -39,7 +40,7 @@ export default async function EventsPage() {
           <div className="flex-shrink-0 text-center w-14">
             <div className="mcc-gradient rounded-xl py-2 text-white">
               <p className="text-xs font-bold uppercase leading-none">
-                {new Date(event.startDate).toLocaleDateString("en-US", { month: "short" })}
+                {new Date(event.startDate).toLocaleDateString("en-US", { timeZone: APP_TIMEZONE, month: "short" })}
               </p>
               <p className="text-xl font-bold leading-tight">
                 {new Date(event.startDate).getDate()}
@@ -60,8 +61,8 @@ export default async function EventsPage() {
             <div className="flex flex-wrap gap-3 mt-2">
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <Clock className="w-3.5 h-3.5" />
-                {new Date(event.startDate).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                {event.endDate && ` – ${new Date(event.endDate).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`}
+                {new Date(event.startDate).toLocaleTimeString("en-US", { timeZone: APP_TIMEZONE, hour: "numeric", minute: "2-digit" })}
+                {event.endDate && ` – ${new Date(event.endDate).toLocaleTimeString("en-US", { timeZone: APP_TIMEZONE, hour: "numeric", minute: "2-digit" })}`}
               </div>
               {event.location && (
                 <div className="flex items-center gap-1 text-xs text-gray-500">

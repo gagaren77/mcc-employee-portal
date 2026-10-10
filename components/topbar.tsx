@@ -2,7 +2,7 @@
 
 import { signOut } from "next-auth/react"
 import { Bell, LogOut, User, Settings, ChevronDown, Users, Calendar, Ticket } from "lucide-react"
-import { getInitials } from "@/lib/utils"
+import { getInitials, APP_TIMEZONE } from "@/lib/utils"
 import { useState } from "react"
 import Link from "next/link"
 
@@ -25,7 +25,7 @@ export function TopBar({ user }: TopBarProps) {
       {/* Left: Date/Time */}
       <div>
         <p className="text-sm font-medium text-gray-800">
-          {new Date().toLocaleDateString("en-US", {
+          {new Date().toLocaleDateString("en-US", { timeZone: APP_TIMEZONE,
             weekday: "long",
             year: "numeric",
             month: "long",

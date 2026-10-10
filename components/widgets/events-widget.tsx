@@ -1,6 +1,6 @@
 import { Calendar, MapPin, Clock } from "lucide-react"
 import Link from "next/link"
-import { formatDate } from "@/lib/utils"
+import { formatDate, APP_TIMEZONE } from "@/lib/utils"
 
 interface Event {
   id: string
@@ -51,7 +51,7 @@ export function EventsWidget({ events }: EventsWidgetProps) {
               <div className="flex-shrink-0 w-12 text-center">
                 <div className="bg-[#1a4a8a] text-white rounded-lg py-1">
                   <p className="text-xs font-bold leading-none">
-                    {new Date(event.startDate).toLocaleDateString("en-US", { month: "short" })}
+                    {new Date(event.startDate).toLocaleDateString("en-US", { timeZone: APP_TIMEZONE, month: "short" })}
                   </p>
                   <p className="text-lg font-bold leading-tight">
                     {new Date(event.startDate).getDate()}
@@ -74,7 +74,7 @@ export function EventsWidget({ events }: EventsWidgetProps) {
                 <div className="flex items-center gap-1 text-xs text-gray-400">
                   <Clock className="w-3 h-3" />
                   <span>
-                    {new Date(event.startDate).toLocaleTimeString("en-US", {
+                    {new Date(event.startDate).toLocaleTimeString("en-US", { timeZone: APP_TIMEZONE,
                       hour: "numeric",
                       minute: "2-digit",
                     })}
