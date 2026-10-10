@@ -7,6 +7,8 @@ import { publicTicketContent } from "@/lib/ticket-public"
 import { ticketNumber } from "@/lib/ticket-constants"
 import { formatDateTime } from "@/lib/utils"
 import { PublicShell } from "@/components/public-shell"
+import { SystemNote } from "@/components/tickets/system-note"
+import { ApprovalPill } from "@/components/tickets/approval-pill"
 import { AttachmentGallery } from "@/components/tickets/attachment-gallery"
 import { PriorityBadge, StatusBadge } from "@/components/tickets/badges"
 
@@ -57,9 +59,12 @@ export default async function PublicTicketPage({ params }: { params: Promise<{ t
             {approvals.map((a: any) => {
               const expired = a.status === "PENDING" && a.expiresAt < new Date()
               return (
-                <li key={a.id} className="flex items-center justify-between">
-                  <span className="text-gray-700">{a.approverName || "Approver"}</span>
-                  <span className="text-xs capitalize text-gray-500">{expired ? "expired" : a.status.toLowerCase()}{a.decidedAt ? ` · ${formatDateTime(a.decidedAt)}` : ""}</span>
+                <li key={a.id} className="flex items-center justify-between gap-3">
+                  <span className="font-medium text-gray-800">{a.approverName || "Approver"}</span>
+                  <span className="flex items-center gap-2">
+                    {a.decidedAt && <span className="text-xs text-gray-400">{formatDateTime(a.decidedAt)}</span>}
+                    <ApprovalPill status={a.status} expired={expired} />
+                  </span>
                 </li>
               )
             })}
@@ -69,7 +74,7 @@ export default async function PublicTicketPage({ params }: { params: Promise<{ t
 
       {comments.map((c: any) =>
         c.source === "SYSTEM" ? (
-          <p key={c.id} className="text-xs text-gray-400 text-center">{c.body} — {formatDateTime(c.createdAt)}</p>
+          <SystemNote key={c.id} body={c.body} meta={formatDateTime(c.createdAt)} />
         ) : (
           <div key={c.id} className="mcc-card p-5">
             <p className="text-xs text-gray-500 mb-2">

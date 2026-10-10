@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation"
+import { SystemNote } from "@/components/tickets/system-note"
 import { Linkify } from "@/components/tickets/linkify"
 import Link from "next/link"
 import { Mail, Globe } from "lucide-react"
@@ -84,9 +85,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 
           {comments.map((c) =>
             c.source === "SYSTEM" ? (
-              <p key={c.id} className="text-xs text-gray-400 text-center">
-                {c.body} — {c.authorName} · {formatDateTime(c.createdAt)}
-              </p>
+              <SystemNote key={c.id} body={c.body} meta={`${c.authorName} · ${formatDateTime(c.createdAt)}`} />
             ) : (
               <div key={c.id} className={`mcc-card p-5 ${c.isInternal ? "border-amber-300 bg-amber-50" : ""}`}>
                 <p className="text-xs text-gray-500 mb-2">
