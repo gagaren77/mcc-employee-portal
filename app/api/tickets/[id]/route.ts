@@ -2,12 +2,13 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { addSystemNote, isStaff, PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/tickets"
+import { addSystemNote, CATEGORIES, isStaff, PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/tickets"
 import { notifyRequesterStatus } from "@/lib/ticket-notify"
 
 const Schema = z.object({
   status: z.enum(STATUSES).optional(),
   priority: z.enum(PRIORITIES).optional(),
+  category: z.enum(CATEGORIES).optional(),
   assigneeId: z.string().nullable().optional(),
 })
 
@@ -23,7 +24,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const ticket = await prisma.ticket.findUnique({ where: { id }, include: { assignee: true } })
   if (!ticket) return NextResponse.json({ error: "Not found" }, { status: 404 })
 
-  const { status, priority, assigneeId } = parsed.data
+  const { status, priority, assigneeId, category } = parsed.data
   const data: Record<string, unknown> = { lastActivityAt: new Date() }
   const notes: string[] = []
 
@@ -35,6 +36,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (priority && priority !== ticket.priority) {
     data.priority = priority
     notes.push(`Priority: ${ticket.priority} → ${priority}`)
+  }
+  if (category && category !== ticket.category) {
+    data.category = category
+    notes.push(`Category: ${ticket.category} → ${category}`)
   }
   if (assigneeId !== undefined && assigneeId !== ticket.assigneeId) {
     if (assigneeId) {

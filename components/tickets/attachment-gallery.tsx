@@ -21,7 +21,7 @@ function iconFor(a: AttachmentView) {
   return FileIcon
 }
 
-export function AttachmentGallery({ attachments }: { attachments: AttachmentView[] }) {
+export function AttachmentGallery({ attachments, basePath = "/api/attachments" }: { attachments: AttachmentView[]; basePath?: string }) {
   const [open, setOpen] = useState<AttachmentView | null>(null)
 
   useEffect(() => {
@@ -43,10 +43,10 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
             <div key={a.id} className="group relative">
               <button type="button" onClick={() => setOpen(a)} className="block rounded-lg overflow-hidden border border-gray-200 bg-gray-50" title={a.filename}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/api/attachments/${a.id}`} alt={a.filename} loading="lazy" className="h-24 w-32 object-cover" />
+                <img src={`${basePath}/${a.id}`} alt={a.filename} loading="lazy" className="h-24 w-32 object-cover" />
               </button>
               <a
-                href={`/api/attachments/${a.id}?download=1`}
+                href={`${basePath}/${a.id}?download=1`}
                 className="absolute bottom-1 right-1 bg-white/90 rounded p-1 shadow opacity-0 group-hover:opacity-100 focus:opacity-100"
                 title={`Download ${a.filename}`}
               >
@@ -71,7 +71,7 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
                     <Eye className="w-3.5 h-3.5" /> Preview
                   </button>
                 )}
-                <a href={`/api/attachments/${a.id}?download=1`} className="text-xs text-[#1a4a8a] hover:underline inline-flex items-center gap-1">
+                <a href={`${basePath}/${a.id}?download=1`} className="text-xs text-[#1a4a8a] hover:underline inline-flex items-center gap-1">
                   <Download className="w-3.5 h-3.5" /> Download
                 </a>
               </li>
@@ -85,7 +85,7 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
           <div className="flex items-center justify-between text-white mb-3" onClick={(e) => e.stopPropagation()}>
             <p className="text-sm font-medium truncate pr-4">{open.filename} <span className="text-white/60 font-normal">· {formatBytes(open.size)}</span></p>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <a href={`/api/attachments/${open.id}?download=1`} className="bg-white text-gray-800 text-sm font-medium rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5">
+              <a href={`${basePath}/${open.id}?download=1`} className="bg-white text-gray-800 text-sm font-medium rounded-lg px-3 py-1.5 inline-flex items-center gap-1.5">
                 <Download className="w-4 h-4" /> Download full copy
               </a>
               <button type="button" onClick={() => setOpen(null)} className="p-1.5 rounded-lg hover:bg-white/10" aria-label="Close">
@@ -95,10 +95,10 @@ export function AttachmentGallery({ attachments }: { attachments: AttachmentView
           </div>
           <div className="flex-1 min-h-0 flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
             {isPdf(open) ? (
-              <iframe src={`/api/attachments/${open.id}`} title={open.filename} className="w-full h-full bg-white rounded-lg" />
+              <iframe src={`${basePath}/${open.id}`} title={open.filename} className="w-full h-full bg-white rounded-lg" />
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`/api/attachments/${open.id}`} alt={open.filename} className="max-w-full max-h-full object-contain rounded-lg bg-white" />
+              <img src={`${basePath}/${open.id}`} alt={open.filename} className="max-w-full max-h-full object-contain rounded-lg bg-white" />
             )}
           </div>
         </div>
