@@ -51,9 +51,7 @@ npm run dev
 # Open http://localhost:3000
 ```
 
-**Default credentials after seeding:**
-- Admin: `admin@mccollege.edu` / `Admin@MCC2024!`
-- Employee: `s.johnson@mccollege.edu` / `Employee@123!`
+**First sign-in after seeding:** the admin account is `admin@mccollege.edu`. Its password is the `INITIAL_ADMIN_PASSWORD` environment variable if you set one, otherwise a random password printed once in the seed log. Change it right away. Sample employee accounts get random passwords; an admin must reset a password before anyone can use one of them.
 
 ## 🏗️ Tech Stack
 
