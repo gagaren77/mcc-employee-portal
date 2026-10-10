@@ -11,6 +11,12 @@ services:
       - DATABASE_URL=file:/data/portal.db
       - AUTH_SECRET=${AUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:3000}
+      - APP_URL=${APP_URL:-${NEXTAUTH_URL:-http://localhost:3000}}
+      # Microsoft 365 (Graph) — mail for tickets/approvals; SharePoint later
+      - AZURE_TENANT_ID=${AZURE_TENANT_ID}
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}
+      - MAILBOX_SUPPORT=${MAILBOX_SUPPORT:-techsupport@mccollege.edu}
       # Okta SSO — uncomment when ready
       # - AUTH_OKTA_ID=${AUTH_OKTA_ID}
       # - AUTH_OKTA_SECRET=${AUTH_OKTA_SECRET}
