@@ -139,6 +139,21 @@ export default async function AdminPage() {
         </p>
       </div>
 
+      {canManage && (
+        <div className="mcc-card p-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Bookmark className="w-5 h-5 text-[#1a4a8a]" />
+              Quick Links
+            </h2>
+            <Link href="/admin/quick-links" className="text-sm font-medium text-[#1a4a8a] hover:underline">
+              Manage quick links →
+            </Link>
+          </div>
+          <p className="text-sm text-gray-500">{quickLinks.length} link{quickLinks.length === 1 ? "" : "s"}. Set where each one goes, group, reorder or hide them.</p>
+        </div>
+      )}
+
       {/* Staff Accounts Management */}
       <div className="mcc-card p-6">
         <div className="flex items-center justify-between mb-4">

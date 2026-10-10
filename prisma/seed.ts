@@ -211,7 +211,7 @@ async function main() {
       { id: "ql-2", title: "Paylocity", url: "https://access.paylocity.com", category: "payroll", description: "Pay stubs & time off", order: 2 },
       { id: "ql-3", title: "Office 365", url: "https://office.com", category: "it", description: "Email, Teams, OneDrive", order: 3 },
       { id: "ql-4", title: "HR Forms", url: "/hr", category: "hr", description: "All HR forms & policies", order: 4 },
-      { id: "ql-5", title: "Benefits Portal", url: "/benefits", category: "benefits", description: "Benefits enrollment", order: 5 },
+      { id: "ql-5", title: "Benefits (Employee Navigator)", url: "https://danzig.employeenavigator.com", category: "benefits", description: "Benefits enrollment & plan details", order: 5 },
       { id: "ql-6", title: "IT Help Desk", url: "/it-help", category: "it", description: "Submit support tickets", order: 6 },
       { id: "ql-7", title: "Student Info System", url: "#", category: "general", description: "SIS / LMS access", order: 7 },
       { id: "ql-8", title: "Zoom", url: "https://zoom.us", category: "it", description: "Video conferencing", order: 8 },

@@ -16,7 +16,7 @@ export default async function DashboardPage() {
       take: 5,
     }),
     prisma.event.findMany({
-      where: { startDate: { gte: new Date() } },
+      where: { published: true, startDate: { gte: new Date() } },
       orderBy: { startDate: "asc" },
       take: 5,
     }),
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
         {/* Main column */}
         <div className="lg:col-span-2 space-y-6">
           <AnnouncementsWidget announcements={announcements} />
-          <QuickLinksWidget quickLinks={quickLinks} />
+          <QuickLinksWidget quickLinks={quickLinks} canManage={["ADMIN", "HR"].includes(session!.user.role)} />
         </div>
 
         {/* Side column */}

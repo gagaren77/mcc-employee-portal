@@ -1,5 +1,8 @@
+import Link from "next/link"
+import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { Bookmark, ExternalLink } from "lucide-react"
+import { Bookmark, ExternalLink, ArrowRight, Settings } from "lucide-react"
+import { CATEGORY_LABEL, linkKind } from "@/lib/quick-link-constants"
 
 function getCategoryStyle(category: string) {
   const styles: Record<string, { bg: string; border: string; icon: string; dot: string }> = {
@@ -14,6 +17,8 @@ function getCategoryStyle(category: string) {
 }
 
 export default async function QuickLinksPage() {
+  const session = await auth()
+  const canManage = !!session?.user && ["ADMIN", "HR"].includes(session.user.role)
   const quickLinks = await prisma.quickLink.findMany({
     where: { isActive: true },
     orderBy: [{ category: "asc" }, { order: "asc" }],
@@ -27,14 +32,22 @@ export default async function QuickLinksPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Bookmark className="w-6 h-6 text-[#1a4a8a]" />
-          Quick Links
-        </h1>
-        <p className="text-gray-500 text-sm mt-1">
-          Frequently used tools and resources at your fingertips.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <Bookmark className="w-6 h-6 text-[#1a4a8a]" />
+            Quick Links
+          </h1>
+          <p className="text-gray-500 text-sm mt-1">
+            Frequently used tools and resources at your fingertips.
+          </p>
+        </div>
+        {canManage && (
+          <Link href="/admin/quick-links" className="mcc-btn-primary flex items-center gap-2 text-sm">
+            <Settings className="w-4 h-4" />
+            Manage links
+          </Link>
+        )}
       </div>
 
       {Object.entries(grouped).map(([category, links]) => {
@@ -43,31 +56,28 @@ export default async function QuickLinksPage() {
           <div key={category} className="mcc-card overflow-hidden">
             <div className={`${bg} ${border} border-b px-5 py-3 flex items-center gap-2`}>
               <div className={`w-2.5 h-2.5 rounded-full ${dot}`} />
-              <h2 className="font-semibold text-gray-800 capitalize">{category}</h2>
+              <h2 className="font-semibold text-gray-800">{CATEGORY_LABEL[category] ?? category}</h2>
               <span className="text-xs text-gray-400 ml-auto">{links.length} links</span>
             </div>
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {links.map((link) => (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:border-[#1a4a8a]/30 hover:bg-blue-50 transition-all group"
-                >
-                  <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
-                    <ExternalLink className={`w-4 h-4 ${icon}`} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-gray-800 group-hover:text-[#1a4a8a] truncate">
-                      {link.title}
-                    </p>
-                    {link.description && (
-                      <p className="text-xs text-gray-500 mt-0.5 truncate">{link.description}</p>
-                    )}
-                  </div>
-                </a>
-              ))}
+              {links.map((link) => {
+                const kind = linkKind(link.url)
+                const inner = (
+                  <>
+                    <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center flex-shrink-0`}>
+                      {kind === "internal" ? <ArrowRight className={`w-4 h-4 ${icon}`} /> : <ExternalLink className={`w-4 h-4 ${icon}`} />}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-semibold truncate ${kind === "unset" ? "text-gray-400" : "text-gray-800 group-hover:text-[#1a4a8a]"}`}>{link.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 truncate">{kind === "unset" ? "Not set up yet" : link.description}</p>
+                    </div>
+                  </>
+                )
+                const cls = "flex items-start gap-3 p-3 rounded-xl border border-gray-100 transition-all group"
+                if (kind === "unset") return <div key={link.id} className={`${cls} opacity-60`}>{inner}</div>
+                if (kind === "internal") return <Link key={link.id} href={link.url} className={`${cls} hover:border-[#1a4a8a]/30 hover:bg-blue-50`}>{inner}</Link>
+                return <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className={`${cls} hover:border-[#1a4a8a]/30 hover:bg-blue-50`}>{inner}</a>
+              })}
             </div>
           </div>
         )
@@ -77,7 +87,7 @@ export default async function QuickLinksPage() {
         <div className="mcc-card p-12 text-center">
           <Bookmark className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500">No quick links configured yet.</p>
-          <p className="text-xs text-gray-400 mt-1">Admin can add links from the Admin Panel.</p>
+          <p className="text-xs text-gray-400 mt-1">Admin or HR can add links from the Admin Panel.</p>
         </div>
       )}
     </div>

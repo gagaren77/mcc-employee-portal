@@ -1,4 +1,5 @@
-import { ExternalLink, Bookmark } from "lucide-react"
+import { ExternalLink, Bookmark, ArrowRight } from "lucide-react"
+import { linkKind } from "@/lib/quick-link-constants"
 import Link from "next/link"
 import * as LucideIcons from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -14,6 +15,7 @@ interface QuickLink {
 
 interface QuickLinksWidgetProps {
   quickLinks: QuickLink[]
+  canManage?: boolean
 }
 
 const categoryColors: Record<string, string> = {
@@ -34,7 +36,7 @@ const categoryIconColors: Record<string, string> = {
   payroll: "text-amber-500",
 }
 
-export function QuickLinksWidget({ quickLinks }: QuickLinksWidgetProps) {
+export function QuickLinksWidget({ quickLinks, canManage = false }: QuickLinksWidgetProps) {
   return (
     <div className="mcc-card p-5">
       <div className="flex items-center justify-between mb-4">
@@ -42,17 +44,19 @@ export function QuickLinksWidget({ quickLinks }: QuickLinksWidgetProps) {
           <Bookmark className="w-5 h-5 text-[#1a4a8a]" />
           Quick Links
         </h2>
-        <Link href="/quick-links" className="text-xs text-[#1a4a8a] hover:text-[#0d2d5c] font-medium">
-          Manage →
+        <Link href={canManage ? "/admin/quick-links" : "/quick-links"} className="text-xs text-[#1a4a8a] hover:text-[#0d2d5c] font-medium">
+          {canManage ? "Manage →" : "View all →"}
         </Link>
       </div>
 
       {quickLinks.length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-6">
           No quick links yet.{" "}
-          <Link href="/admin/quick-links" className="text-[#1a4a8a] hover:underline">
-            Add some
-          </Link>
+          {canManage && (
+            <Link href="/admin/quick-links" className="text-[#1a4a8a] hover:underline">
+              Add some
+            </Link>
+          )}
         </p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -60,26 +64,22 @@ export function QuickLinksWidget({ quickLinks }: QuickLinksWidgetProps) {
             const colorClass = categoryColors[link.category] ?? categoryColors.general
             const iconColorClass = categoryIconColors[link.category] ?? categoryIconColors.general
 
-            return (
-              <a
-                key={link.id}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={cn(
-                  "flex flex-col gap-1.5 p-3 rounded-xl border transition-colors group",
-                  colorClass
-                )}
-              >
+            const kind = linkKind(link.url)
+            const body = (
+              <>
                 <div className="flex items-center justify-between">
-                  <ExternalLink className={cn("w-3.5 h-3.5", iconColorClass)} />
+                  {kind === "internal" ? <ArrowRight className={cn("w-3.5 h-3.5", iconColorClass)} /> : <ExternalLink className={cn("w-3.5 h-3.5", iconColorClass)} />}
                 </div>
                 <p className="text-sm font-medium text-gray-800 leading-tight">{link.title}</p>
-                {link.description && (
-                  <p className="text-xs text-gray-500 line-clamp-1">{link.description}</p>
+                {(kind === "unset" || link.description) && (
+                  <p className="text-xs text-gray-500 line-clamp-1">{kind === "unset" ? "Not set up yet" : link.description}</p>
                 )}
-              </a>
+              </>
             )
+            const cls = cn("flex flex-col gap-1.5 p-3 rounded-xl border transition-colors group", colorClass)
+            if (kind === "unset") return <div key={link.id} className={cn(cls, "opacity-60")}>{body}</div>
+            if (kind === "internal") return <Link key={link.id} href={link.url} className={cls}>{body}</Link>
+            return <a key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className={cls}>{body}</a>
           })}
         </div>
       )}
