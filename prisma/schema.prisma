@@ -149,6 +149,7 @@ model Ticket {
   requesterName   String?
   assigneeId      String?
   sourceMessageId String?   @unique            // Internet-Message-ID of the originating email (dedupe)
+  accessToken     String?   @unique            // unguessable token for the no-login ticket link (/t/<token>)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   resolvedAt      DateTime?
@@ -158,6 +159,7 @@ model Ticket {
   assignee  User?           @relation("TicketAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
   comments  TicketComment[]
   attachments TicketAttachment[]
+  approvals   TicketApproval[]
 
   @@index([status])
   @@index([requesterEmail])
@@ -207,4 +209,27 @@ model TicketAttachment {
 
   @@index([ticketId])
   @@map("ticket_attachments")
+}
+
+// Approval requests sent to a person (director etc.). The emailed link carries a random token; only its hash is stored.
+model TicketApproval {
+  id              String    @id @default(cuid())
+  ticketId        String
+  approverEmail   String
+  approverName    String?
+  approverUserId  String?
+  requestedById   String?
+  requestedByName String?
+  note            String?   // message from IT shown to the approver
+  status          String    @default("PENDING") // PENDING | APPROVED | DECLINED | CANCELLED
+  tokenHash       String    @unique
+  decisionComment String?
+  decidedAt       DateTime?
+  expiresAt       DateTime
+  createdAt       DateTime  @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@map("ticket_approvals")
 }

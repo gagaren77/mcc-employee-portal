@@ -19,6 +19,9 @@ services:
       - MAILBOX_SUPPORT=${MAILBOX_SUPPORT:-techsupport@mccollege.edu}
       - MAILBOX_FOLDERS=${MAILBOX_FOLDERS:-Inbox,Staff,Students}
       - MAIL_IGNORE_SENDERS=${MAIL_IGNORE_SENDERS:-}
+      # Ticket links in emails open without login while true. Set to false once everyone signs in via Okta.
+      - TICKET_LINKS_PUBLIC=${TICKET_LINKS_PUBLIC:-true}
+      - TICKET_NOTIFY_EMAIL=${TICKET_NOTIFY_EMAIL:-}
       # Okta SSO — uncomment when ready
       # - AUTH_OKTA_ID=${AUTH_OKTA_ID}
       # - AUTH_OKTA_SECRET=${AUTH_OKTA_SECRET}

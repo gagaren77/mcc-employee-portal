@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
-import { PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/ticket-constants"
+import { CATEGORIES, PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/ticket-constants"
 import { FilePicker } from "@/components/tickets/file-picker"
 import { uploadFiles } from "@/components/tickets/upload"
 
@@ -79,12 +79,14 @@ export function StaffControls({
   ticketId,
   status,
   priority,
+  category,
   assigneeId,
   agents,
 }: {
   ticketId: string
   status: string
   priority: string
+  category: string
   assigneeId: string | null
   agents: Agent[]
 }) {
@@ -114,6 +116,15 @@ export function StaffControls({
         <select className={sel} disabled={busy} value={status} onChange={(e) => patch({ status: e.target.value })}>
           {STATUSES.map((s) => (
             <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Category</label>
+        <select className={sel} disabled={busy} value={category} onChange={(e) => patch({ category: e.target.value })}>
+          {!(CATEGORIES as readonly string[]).includes(category) && <option value={category}>{category}</option>}
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
           ))}
         </select>
       </div>

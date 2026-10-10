@@ -3,11 +3,12 @@ import Link from "next/link"
 import { Mail, Globe } from "lucide-react"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { canViewTicket, isStaff, ticketNumber } from "@/lib/tickets"
+import { approvalLimit, canViewTicket, isStaff, ticketNumber } from "@/lib/tickets"
 import { formatDateTime } from "@/lib/utils"
 import { PriorityBadge, StatusBadge } from "@/components/tickets/badges"
 import { AttachmentGallery } from "@/components/tickets/attachment-gallery"
 import { ReplyBox, StaffControls } from "./ticket-actions"
+import { ApprovalsCard, type ApprovalView } from "./approvals-card"
 
 export default async function TicketPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -29,6 +30,18 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
     visibleAttachments
       .filter((a) => (a.commentId ?? null) === commentId)
       .map((a) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, size: a.size, previewable: a.previewable }))
+  const approvalRows = await prisma.ticketApproval.findMany({ where: { ticketId: id }, orderBy: { createdAt: "asc" } })
+  const approvals: ApprovalView[] = approvalRows.map((a: any) => ({
+    id: a.id,
+    approverName: a.approverName,
+    approverEmail: staff ? a.approverEmail : "",
+    status: a.status,
+    effective: a.status === "PENDING" && a.expiresAt < new Date() ? "EXPIRED" : a.status,
+    createdAt: a.createdAt.toISOString(),
+    decidedAt: a.decidedAt ? a.decidedAt.toISOString() : null,
+    decisionComment: a.decisionComment,
+    requestedByName: a.requestedByName,
+  }))
   const agents = staff
     ? await prisma.user.findMany({
         where: { role: { in: ["IT", "ADMIN"] }, isActive: true },
@@ -95,8 +108,9 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 
         <div className="space-y-4">
           {staff && (
-            <StaffControls ticketId={ticket.id} status={ticket.status} priority={ticket.priority} assigneeId={ticket.assigneeId} agents={agents} />
+            <StaffControls ticketId={ticket.id} status={ticket.status} priority={ticket.priority} category={ticket.category} assigneeId={ticket.assigneeId} agents={agents} />
           )}
+          <ApprovalsCard ticketId={ticket.id} approvals={approvals} staff={staff} limit={approvalLimit(ticket.category)} />
           <div className="mcc-card p-4 text-xs text-gray-600 space-y-1.5">
             <div className="flex justify-between"><span>Requester</span><span className="font-medium text-right">{ticket.requesterName || ticket.requesterEmail}</span></div>
             <div className="flex justify-between"><span>Email</span><span className="font-medium text-right break-all">{ticket.requesterEmail}</span></div>

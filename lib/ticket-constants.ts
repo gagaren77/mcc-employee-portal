@@ -2,15 +2,16 @@
 export const STAFF_ROLES = ["IT", "ADMIN"] as const
 export const isStaff = (role?: string | null) => !!role && (STAFF_ROLES as readonly string[]).includes(role)
 
-export const STATUSES = ["OPEN", "IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED"] as const
-export const ACTIVE_STATUSES = ["OPEN", "IN_PROGRESS", "WAITING"] as const
+export const STATUSES = ["OPEN", "IN_PROGRESS", "WAITING", "PENDING_APPROVAL", "RESOLVED", "CLOSED"] as const
+export const ACTIVE_STATUSES = ["OPEN", "IN_PROGRESS", "WAITING", "PENDING_APPROVAL"] as const
 export const PRIORITIES = ["LOW", "NORMAL", "HIGH", "URGENT"] as const
-export const CATEGORIES = ["Account & Password", "Hardware", "Network", "Software", "Printing", "Equipment Request", "Other"] as const
+export const CATEGORIES = ["Account & Password", "Hardware", "Network", "Software", "Printing", "Equipment Request", "Access Request", "Other"] as const
 
 export const STATUS_LABEL: Record<string, string> = {
   OPEN: "Open",
   IN_PROGRESS: "In progress",
   WAITING: "Waiting on requester",
+  PENDING_APPROVAL: "Awaiting approval",
   RESOLVED: "Resolved",
   CLOSED: "Closed",
 }
@@ -44,3 +45,7 @@ export function formatBytes(n: number) {
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`
   return `${(n / 1024 / 1024).toFixed(1)} MB`
 }
+
+// Approval requests are only offered on these categories, with this many approvers (pending + approved) at most.
+export const APPROVAL_LIMITS: Record<string, number> = { "Equipment Request": 1, "Access Request": 2 }
+export const approvalLimit = (category: string) => APPROVAL_LIMITS[category] ?? 0

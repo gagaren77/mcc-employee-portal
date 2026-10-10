@@ -8,7 +8,10 @@ export default auth((req) => {
 
   const isAuthPage = nextUrl.pathname.startsWith("/auth")
   const isApiAuth = nextUrl.pathname.startsWith("/api/auth")
-  const isPublic = isAuthPage || isApiAuth
+  // Token-protected pages/APIs that must work without a login (emailed approval links and ticket-tracking links).
+  // Each route validates its own unguessable token.
+  const isTokenLink = ["/t/", "/approve/", "/api/t/", "/api/approvals/"].some((p) => nextUrl.pathname.startsWith(p))
+  const isPublic = isAuthPage || isApiAuth || isTokenLink
 
   // Allow public routes through
   if (isPublic) return NextResponse.next()

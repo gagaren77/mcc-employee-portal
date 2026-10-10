@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { newToken } from "@/lib/tokens"
 
 export * from "@/lib/ticket-constants"
 
@@ -36,6 +37,7 @@ export async function createTicket(input: NewTicketInput) {
             requesterEmail: email,
             requesterName: input.requesterName ?? user?.name ?? null,
             sourceMessageId: input.sourceMessageId ?? null,
+            accessToken: newToken(),
             ...(input.createdAt ? { createdAt: input.createdAt, lastActivityAt: input.createdAt } : {}),
           },
         })

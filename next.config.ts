@@ -25,6 +25,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Token links: keep them out of search engines and never leak the token via Referer.
+        source: "/:prefix(t|approve)/:path*",
+        headers: [
+          { key: "Referrer-Policy", value: "no-referrer" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow" },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           {
