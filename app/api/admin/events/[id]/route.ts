@@ -47,6 +47,7 @@ export async function PATCH(
   if (data.location !== undefined) update.location = data.location || null
   if (data.category !== undefined) update.category = data.category
   if (data.published !== undefined) update.published = data.published
+  if (data.published === true && !existing.published) update.createdAt = new Date() // counts as newly posted for the notification bell
 
   const event = await prisma.event.update({ where: { id }, data: update })
   return NextResponse.json({ event })
