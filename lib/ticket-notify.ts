@@ -37,7 +37,8 @@ export const notifyRequesterReceived = (t: T) =>
       subject: `${tag(t)} We received your request: ${t.subject}`,
       html: emailLayout(
         `Ticket ${ticketNumber(t.number)} received`,
-        para(`Hi${t.requesterName ? " " + esc(t.requesterName.split(" ")[0]) : ""}, IT has received your request and will get back to you.`) +
+        para(`Hi${t.requesterName ? " " + esc(t.requesterName.split(" ")[0]) : ""},`) +
+          para("IT Department has received your request and will get back to you soon.") +
           quote(t.subject) +
           para(`To add information, just reply to this email (keep <b>${esc(tag(t))}</b> in the subject) or use the portal.`) +
           emailButton(link(t), "View ticket")
