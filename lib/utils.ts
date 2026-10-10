@@ -5,11 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** All dates are shown in the college's time zone, not the server's (the container runs in UTC). */
+export const APP_TIMEZONE = "America/Chicago"
+
 export function formatDate(date: Date | string) {
   return new Date(date).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: APP_TIMEZONE,
   })
 }
 
@@ -20,6 +24,7 @@ export function formatDateTime(date: Date | string) {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: APP_TIMEZONE,
   })
 }
 

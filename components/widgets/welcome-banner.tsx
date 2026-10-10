@@ -1,4 +1,5 @@
 import { GraduationCap, Sparkles } from "lucide-react"
+import { APP_TIMEZONE } from "@/lib/utils"
 
 interface WelcomeBannerProps {
   user: {
@@ -9,7 +10,7 @@ interface WelcomeBannerProps {
 }
 
 function getGreeting() {
-  const hour = new Date().getHours()
+  const hour = Number(new Intl.DateTimeFormat("en-US", { hour: "numeric", hour12: false, timeZone: APP_TIMEZONE }).format(new Date())) % 24
   if (hour < 12) return "Good morning"
   if (hour < 17) return "Good afternoon"
   return "Good evening"
@@ -29,7 +30,7 @@ export function WelcomeBanner({ user }: WelcomeBannerProps) {
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-[#c9a227]" />
             <span className="text-blue-200 text-sm font-medium">
-              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+              {new Date().toLocaleDateString("en-US", { timeZone: APP_TIMEZONE, weekday: "long", month: "long", day: "numeric" })}
             </span>
           </div>
           <h1 className="text-2xl font-bold mt-1">
