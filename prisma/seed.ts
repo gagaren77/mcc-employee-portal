@@ -6,6 +6,31 @@ const prisma = new PrismaClient()
 async function main() {
   console.log("🌱 Checking database seed status...")
 
+  // ─── Always-ensure events (runs on every start, even on an already-seeded DB) ──
+  // Upsert by fixed id with empty update, so admin edits are never overwritten.
+  // NOTE: if an admin deletes one of these, it reappears on next restart.
+  // Remove this block once the rollouts are done.
+  const soon = (d: number) => new Date(Date.now() + d * 86400000)
+  const platformEvents = [
+    {
+      id: "evt-okta-rollout",
+      title: "Okta Single Sign-On Coming Soon",
+      description: "Portal login is moving to Okta SSO. You'll sign in with your MCC Okta account — no separate password needed. Details to follow.",
+      startDate: soon(30),
+      category: "general",
+    },
+    {
+      id: "evt-sharepoint-integration",
+      title: "SharePoint Integration Coming Soon",
+      description: "Documents from MCC SharePoint will appear directly in the portal. Browse and search policies, forms and resources in one place.",
+      startDate: soon(45),
+      category: "general",
+    },
+  ]
+  for (const e of platformEvents) {
+    await prisma.event.upsert({ where: { id: e.id }, update: {}, create: e })
+  }
+
   // ─── Idempotency guard ────────────────────────────────
   // If users already exist, skip the destructive seeding.
   const userCount = await prisma.user.count()

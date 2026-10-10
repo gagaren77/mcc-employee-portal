@@ -40,8 +40,8 @@ export default async function DashboardPage() {
 
         {/* Side column */}
         <div className="space-y-6">
-          <StatsWidget />
           <EventsWidget events={events} />
+          <StatsWidget />
         </div>
       </div>
     </div>

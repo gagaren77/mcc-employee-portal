@@ -3,10 +3,11 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { ROLES } from "@/lib/roles"
 
 const UpdateUserSchema = z.object({
   name: z.string().min(1).max(100).optional(),
-  role: z.enum(["EMPLOYEE", "HR", "IT", "ADMIN"]).optional(),
+  role: z.enum(ROLES).optional(),
   department: z.string().nullable().optional(),
   title: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
