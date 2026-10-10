@@ -55,7 +55,7 @@ export function Sidebar({ user }: SidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+      <Link href="/dashboard" aria-label="Go to the dashboard" title="Dashboard" className="flex items-center gap-3 px-4 py-5 border-b border-white/10 hover:bg-white/5 transition-colors">
         <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-white flex items-center justify-center overflow-hidden p-0.5">
           <img
             src="/logo.png"
@@ -69,7 +69,7 @@ export function Sidebar({ user }: SidebarProps) {
             <p className="text-xs text-blue-300 leading-tight truncate">Employee Portal</p>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
