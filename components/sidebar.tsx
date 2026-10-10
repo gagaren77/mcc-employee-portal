@@ -12,12 +12,10 @@ import {
   Bookmark,
   ClipboardList,
   Settings,
-  Inbox,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { isStaff } from "@/lib/ticket-constants"
 import { useState } from "react"
 
 interface SidebarProps {
@@ -47,9 +45,7 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const isAdmin = ["ADMIN", "HR"].includes(user.role)
-  const items = isStaff(user.role)
-    ? navItems.flatMap((i) => (i.href === "/it-help" ? [i, { href: "/tickets/queue", label: "Ticket Queue", icon: Inbox }] : [i]))
-    : navItems
+  const items = navItems // Ticket Queue now lives on the IT Help Desk page (staff only)
 
   return (
     <aside

@@ -1,6 +1,6 @@
-"use client"
-
-import { HelpCircle, Monitor, Wifi, Lock, Printer, Phone, Mail, ExternalLink, MessageSquare, Ticket, AlertCircle, CheckCircle, Clock } from "lucide-react"
+import { HelpCircle, Wifi, Lock, Printer, Mail, MessageSquare, Ticket, Inbox, AlertCircle, CheckCircle, Clock } from "lucide-react"
+import { auth } from "@/auth"
+import { isStaff } from "@/lib/ticket-constants"
 import { TicketForm } from "@/components/tickets/ticket-form"
 
 const categories = [
@@ -15,18 +15,6 @@ const categories = [
       { title: "Account Lockout", description: "Your account is locked after 5 failed attempts. Contact IT.", link: "/tickets/new", linkText: "Submit Ticket" },
       { title: "MFA Setup", description: "Set up multi-factor authentication for your account.", link: "#", linkText: "Setup Guide" },
       { title: "New Employee Account Setup", description: "First time login, email, Teams, and software access.", link: "#", linkText: "Guide" },
-    ],
-  },
-  {
-    id: "hardware",
-    title: "Hardware & Equipment",
-    icon: Monitor,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    items: [
-      { title: "Equipment Request", description: "Request a new computer, monitor, keyboard, or accessories.", link: "#", linkText: "Request Form" },
-      { title: "Hardware Issues", description: "Computer not turning on, slow performance, broken equipment.", link: "/tickets/new", linkText: "Submit Ticket" },
-      { title: "Loaner Equipment", description: "Borrow a laptop or device temporarily.", link: "#", linkText: "Check Availability" },
     ],
   },
   {
@@ -86,7 +74,9 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-export default function ITHelpPage() {
+export default async function ITHelpPage() {
+  const session = await auth()
+  const staff = !!session?.user && isStaff(session.user.role)
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -104,17 +94,7 @@ export default function ITHelpPage() {
         {/* Main content */}
         <div className="lg:col-span-2 space-y-5">
           {/* Quick contact */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <a href="tel:+13125559999" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Phone className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Call IT</p>
-                <p className="text-sm font-semibold text-gray-800">(312) 555-9999</p>
-                <p className="text-xs text-gray-400">M–F 8am–6pm</p>
-              </div>
-            </a>
+          <div className={`grid grid-cols-1 gap-4 ${staff ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             <a href="mailto:techsupport@mccollege.edu" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
               <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                 <Mail className="w-5 h-5 text-green-600" />
@@ -135,6 +115,18 @@ export default function ITHelpPage() {
                 <p className="text-xs text-gray-400">Track requests</p>
               </div>
             </a>
+            {staff && (
+              <a href="/tickets/queue" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <Inbox className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500">IT staff</p>
+                  <p className="text-sm font-semibold text-gray-800">Ticket Queue</p>
+                  <p className="text-xs text-gray-400">Manage all tickets</p>
+                </div>
+              </a>
+            )}
           </div>
 
           {/* Help categories */}
@@ -204,12 +196,13 @@ export default function ITHelpPage() {
           <div className="mcc-card p-5">
             <h3 className="font-semibold text-gray-800 mb-3 text-sm">Help Desk Hours</h3>
             <div className="space-y-1.5 text-xs text-gray-600">
-              <div className="flex justify-between"><span>Monday – Friday</span><span className="font-medium">8:00 AM – 6:00 PM</span></div>
-              <div className="flex justify-between"><span>Saturday</span><span className="font-medium">9:00 AM – 1:00 PM</span></div>
+              <div className="flex justify-between"><span>Monday – Thursday</span><span className="font-medium">9:00 AM – 6:00 PM</span></div>
+              <div className="flex justify-between"><span>Friday</span><span className="font-medium">9:00 AM – 4:00 PM</span></div>
+              <div className="flex justify-between"><span>Saturday</span><span className="font-medium text-gray-400">Closed</span></div>
               <div className="flex justify-between"><span>Sunday</span><span className="font-medium text-gray-400">Closed</span></div>
             </div>
             <div className="mt-3 p-2.5 bg-amber-50 rounded-lg text-xs text-amber-700">
-              After-hours emergencies: (312) 555-0911
+              In case of emergency: message us on Teams, or call 911.
             </div>
           </div>
         </div>
