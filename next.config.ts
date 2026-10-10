@@ -2,6 +2,8 @@ import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // Middleware buffers request bodies (default 10MB, then truncates). Ticket uploads allow 20MB per file.
+  experimental: { proxyClientMaxBodySize: "25mb" },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "avatars.githubusercontent.com" },

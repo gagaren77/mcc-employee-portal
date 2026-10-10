@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma"
-import { graphConfigured, listFolderMessages, resolveFolders, SUPPORT_MAILBOX, type InboxMessage } from "@/lib/graph"
-import { createTicket } from "@/lib/tickets"
+import { getAttachmentBytes, graphConfigured, listFolderMessages, listMessageAttachments, resolveFolders, SUPPORT_MAILBOX, type InboxMessage } from "@/lib/graph"
+import { addSystemNote, createTicket } from "@/lib/tickets"
+import { saveAttachment } from "@/lib/attachments"
+import { MAX_ATTACHMENT_BYTES } from "@/lib/ticket-constants"
 import { notifyRequesterReceived } from "@/lib/ticket-notify"
 
 const INBOX_STATE_KEY = "support_inbox_since" // kept from v1 so the Inbox cursor survives
@@ -73,6 +75,30 @@ function isAutomated(m: InboxMessage): boolean {
   return false
 }
 
+/** Saves a message's file attachments onto the ticket. Never throws: a bad attachment must not lose the ticket. */
+async function importAttachments(m: InboxMessage, ticketId: string, commentId: string | null) {
+  if (!m.hasAttachments) return
+  let skipped = 0
+  try {
+    const list = await listMessageAttachments(m.id)
+    for (const a of list.slice(0, 15)) {
+      if (a["@odata.type"] !== "#microsoft.graph.fileAttachment") continue
+      if (a.isInline && a.size < 30_000) continue // signature logos, tracking pixels
+      if (a.size > MAX_ATTACHMENT_BYTES) {
+        skipped++
+        continue
+      }
+      const data = await getAttachmentBytes(m.id, a.id)
+      const r = await saveAttachment({ ticketId, commentId, filename: a.name, data, source: "EMAIL" })
+      if (!r.ok) skipped++
+    }
+  } catch (e) {
+    console.error("[mail-sync] attachments failed:", m.id, (e as Error).message)
+    skipped++
+  }
+  if (skipped) await addSystemNote(ticketId, `${skipped} email attachment(s) could not be saved (blocked type, too large, or error)`, "Mail import")
+}
+
 async function handleMessage(m: InboxMessage): Promise<"created" | "commented" | "skipped"> {
   if (isAutomated(m)) return "skipped"
   const msgId = m.internetMessageId
@@ -96,7 +122,7 @@ async function handleMessage(m: InboxMessage): Promise<"created" | "commented" |
     const ticket = await prisma.ticket.findUnique({ where: { number: Number(tagMatch[1]) } })
     if (ticket) {
       const user = await prisma.user.findFirst({ where: { email }, select: { id: true } })
-      await prisma.ticketComment.create({
+      const comment = await prisma.ticketComment.create({
         data: {
           ticketId: ticket.id,
           authorId: user?.id ?? null,
@@ -113,6 +139,7 @@ async function handleMessage(m: InboxMessage): Promise<"created" | "commented" |
         where: { id: ticket.id },
         data: { lastActivityAt: received, ...(reopen ? { status: "OPEN", resolvedAt: null } : {}) },
       })
+      await importAttachments(m, ticket.id, comment.id)
       return "commented"
     }
   }
@@ -127,6 +154,8 @@ async function handleMessage(m: InboxMessage): Promise<"created" | "commented" |
     sourceMessageId: msgId || null,
     createdAt: received,
   })
+
+  await importAttachments(m, ticket.id, null)
 
   // Acknowledge, but cap per-sender acks to damp any auto-responder ping-pong.
   const recent = await prisma.ticket.count({

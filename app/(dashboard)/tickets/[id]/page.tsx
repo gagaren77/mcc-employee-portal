@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { canViewTicket, isStaff, ticketNumber } from "@/lib/tickets"
 import { formatDateTime } from "@/lib/utils"
 import { PriorityBadge, StatusBadge } from "@/components/tickets/badges"
+import { AttachmentGallery } from "@/components/tickets/attachment-gallery"
 import { ReplyBox, StaffControls } from "./ticket-actions"
 
 export default async function TicketPage({ params }: { params: Promise<{ id: string }> }) {
@@ -21,6 +22,13 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 
   const staff = isStaff(session.user.role)
   const comments = staff ? ticket.comments : ticket.comments.filter((c) => !c.isInternal)
+  const hiddenComments = new Set(ticket.comments.filter((c) => c.isInternal).map((c) => c.id))
+  const allAttachments = await prisma.ticketAttachment.findMany({ where: { ticketId: id }, orderBy: { createdAt: "asc" } })
+  const visibleAttachments = staff ? allAttachments : allAttachments.filter((a) => !a.commentId || !hiddenComments.has(a.commentId))
+  const attachmentsFor = (commentId: string | null) =>
+    visibleAttachments
+      .filter((a) => (a.commentId ?? null) === commentId)
+      .map((a) => ({ id: a.id, filename: a.filename, mimeType: a.mimeType, size: a.size, previewable: a.previewable }))
   const agents = staff
     ? await prisma.user.findMany({
         where: { role: { in: ["IT", "ADMIN"] }, isActive: true },
@@ -57,6 +65,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
               {ticket.requesterName || ticket.requesterEmail} · {formatDateTime(ticket.createdAt)}
             </p>
             <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{ticket.description}</p>
+            <AttachmentGallery attachments={attachmentsFor(null)} />
           </div>
 
           {comments.map((c) =>
@@ -72,6 +81,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
                   {c.isInternal && <span className="ml-2 text-amber-700 font-medium">Internal note</span>}
                 </p>
                 <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{c.body}</p>
+                <AttachmentGallery attachments={attachmentsFor(c.id)} />
               </div>
             )
           )}

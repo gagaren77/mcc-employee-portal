@@ -27,3 +27,20 @@ export function canViewTicket(
   return !!user.email && ticket.requesterEmail.toLowerCase() === user.email.toLowerCase()
 }
 
+
+// ─── Attachments ─────────────────────────────────────────
+export const MAX_ATTACHMENT_BYTES = 20 * 1024 * 1024
+export const MAX_FILES_PER_UPLOAD = 10
+export const MAX_ATTACHMENTS_PER_TICKET = 60
+// Executable/script types are never stored.
+export const BLOCKED_EXTENSIONS = [
+  "exe", "bat", "cmd", "com", "scr", "msi", "msp", "js", "jse", "vbs", "vbe", "wsf", "ps1", "psm1",
+  "jar", "dll", "lnk", "hta", "reg", "apk", "app", "sh", "iso", "cpl", "gadget",
+]
+export const extOf = (name: string) => (name.includes(".") ? name.split(".").pop()!.toLowerCase() : "")
+export const isBlockedFile = (name: string) => BLOCKED_EXTENSIONS.includes(extOf(name))
+export function formatBytes(n: number) {
+  if (n < 1024) return `${n} B`
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`
+  return `${(n / 1024 / 1024).toFixed(1)} MB`
+}

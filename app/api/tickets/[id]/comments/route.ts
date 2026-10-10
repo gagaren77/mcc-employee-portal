@@ -24,7 +24,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const staff = isStaff(session.user.role)
   const internal = staff && !!parsed.data.isInternal // requesters can never post internal notes
 
-  await prisma.ticketComment.create({
+  const comment = await prisma.ticketComment.create({
     data: {
       ticketId: id,
       authorId: session.user.id,
@@ -47,5 +47,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (staff && !internal) {
     void notifyRequesterReply(ticket, session.user.name || "IT Support", parsed.data.body)
   }
-  return NextResponse.json({ ok: true }, { status: 201 })
+  return NextResponse.json({ ok: true, commentId: comment.id }, { status: 201 })
 }
