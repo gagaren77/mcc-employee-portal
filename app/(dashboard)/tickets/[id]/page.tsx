@@ -109,7 +109,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
 
         <div className="space-y-4">
           {staff && (
-            <StaffControls ticketId={ticket.id} status={ticket.status} priority={ticket.priority} category={ticket.category} assigneeId={ticket.assigneeId} agents={agents} />
+            <StaffControls ticketId={ticket.id} status={ticket.status} priority={ticket.priority} category={ticket.category} assigneeId={ticket.assigneeId} agents={agents} approvalsApproved={approvals.some((a) => a.status === "APPROVED")} />
           )}
           <ApprovalsCard ticketId={ticket.id} approvals={approvals} staff={staff} limit={approvalLimit(ticket.category)} />
           <div className="mcc-card p-4 text-xs text-gray-600 space-y-1.5">

@@ -82,6 +82,7 @@ export function StaffControls({
   category,
   assigneeId,
   agents,
+  approvalsApproved = false,
 }: {
   ticketId: string
   status: string
@@ -89,10 +90,18 @@ export function StaffControls({
   category: string
   assigneeId: string | null
   agents: Agent[]
+  approvalsApproved?: boolean
 }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState("")
+  const [pendingStatus, setPendingStatus] = useState<string | null>(null)
+
+  // Resolving/closing emails the requester (and approvers), so ask first.
+  function changeStatus(next: string) {
+    if (next === "RESOLVED" || next === "CLOSED") setPendingStatus(next)
+    else patch({ status: next })
+  }
 
   async function patch(change: Record<string, unknown>) {
     setBusy(true)
@@ -113,7 +122,7 @@ export function StaffControls({
       <h3 className="text-sm font-semibold text-gray-800">Manage</h3>
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1">Status</label>
-        <select className={sel} disabled={busy} value={status} onChange={(e) => patch({ status: e.target.value })}>
+        <select className={sel} disabled={busy} value={status} onChange={(e) => changeStatus(e.target.value)}>
           {STATUSES.map((s) => (
             <option key={s} value={s}>{STATUS_LABEL[s]}</option>
           ))}
@@ -146,6 +155,34 @@ export function StaffControls({
         </select>
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
+      {pendingStatus && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setPendingStatus(null)}>
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <h4 className="text-base font-semibold text-gray-900">
+              Mark this ticket as {pendingStatus === "CLOSED" ? "Closed" : "Resolved"}?
+            </h4>
+            <p className="mt-2 text-sm text-gray-600">
+              The requester will get an email{approvalsApproved ? ", and so will the people who approved it" : ""}.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button type="button" autoFocus onClick={() => setPendingStatus(null)} className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = pendingStatus
+                  setPendingStatus(null)
+                  patch({ status: next })
+                }}
+                className="mcc-btn-primary text-sm"
+              >
+                Yes, mark {pendingStatus === "CLOSED" ? "closed" : "resolved"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
