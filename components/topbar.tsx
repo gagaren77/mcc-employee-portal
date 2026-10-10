@@ -1,7 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
-import { LogOut, User, Settings, ChevronDown, Users, Calendar, Ticket, Megaphone, Bookmark } from "lucide-react"
+import { LogOut, User, Settings, ChevronDown, Users, Calendar, Ticket, Megaphone } from "lucide-react"
 import { getInitials, APP_TIMEZONE } from "@/lib/utils"
 import { useState } from "react"
 import Link from "next/link"
@@ -21,6 +21,22 @@ export function TopBar({ user }: TopBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const isAdminLevel = ["ADMIN", "HR"].includes(user.role)
   const canSeeAdminPanel = isAdminLevel || user.role === "IT"
+
+  // Dropdown groups: personal, content management (Admin/HR), then the Admin Panel (Admin/HR/IT).
+  const sections = [
+    { label: null as string | null, items: [{ href: "/profile", label: "My Profile", Icon: User }, { href: "/tickets", label: "My Tickets", Icon: Ticket }] },
+    {
+      label: "Manage",
+      items: isAdminLevel
+        ? [
+            { href: "/admin/users", label: "Users", Icon: Users },
+            { href: "/admin/events", label: "Events", Icon: Calendar },
+            { href: "/admin/announcements", label: "Announcements", Icon: Megaphone },
+          ]
+        : [],
+    },
+    { label: "Administration", items: canSeeAdminPanel ? [{ href: "/admin", label: "Admin Panel", Icon: Settings }] : [] },
+  ]
 
   return (
     <header className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -80,77 +96,25 @@ export function TopBar({ user }: TopBarProps) {
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>
 
-                <Link
-                  href="/profile"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <User className="w-4 h-4 text-gray-400" />
-                  My Profile
-                </Link>
-
-                <Link
-                  href="/tickets"
-                  onClick={() => setDropdownOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <Ticket className="w-4 h-4 text-gray-400" />
-                  My Tickets
-                </Link>
-
-                {isAdminLevel && (
-                  <Link
-                    href="/admin/users"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Users className="w-4 h-4 text-gray-400" />
-                    Users
-                  </Link>
-                )}
-
-                {isAdminLevel && (
-                  <Link
-                    href="/admin/events"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    Events
-                  </Link>
-                )}
-
-                {isAdminLevel && (
-                  <Link
-                    href="/admin/announcements"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Megaphone className="w-4 h-4 text-gray-400" />
-                    Announcements
-                  </Link>
-                )}
-
-                {isAdminLevel && (
-                  <Link
-                    href="/admin/quick-links"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Bookmark className="w-4 h-4 text-gray-400" />
-                    Quick Links
-                  </Link>
-                )}
-
-                {canSeeAdminPanel && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Settings className="w-4 h-4 text-gray-400" />
-                    Admin Panel
-                  </Link>
+                {sections.map((section) =>
+                  section.items.length === 0 ? null : (
+                    <div key={section.label ?? "me"} className={section.label ? "border-t border-gray-100 mt-1 pt-1" : ""}>
+                      {section.label && (
+                        <p className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-gray-400">{section.label}</p>
+                      )}
+                      {section.items.map(({ href, label, Icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <Icon className="w-4 h-4 text-gray-400" />
+                          {label}
+                        </Link>
+                      ))}
+                    </div>
+                  )
                 )}
 
                 <div className="border-t border-gray-100 mt-1" />
