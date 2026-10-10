@@ -41,6 +41,8 @@ export function getRoleBadgeColor(role: string) {
       return "bg-purple-100 text-purple-700"
     case "IT":
       return "bg-blue-100 text-blue-700"
+    case "ADJUNCT":
+      return "bg-amber-100 text-amber-700"
     default:
       return "bg-gray-100 text-gray-700"
   }

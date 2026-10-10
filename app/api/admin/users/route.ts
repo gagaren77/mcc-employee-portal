@@ -3,12 +3,13 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { ROLES } from "@/lib/roles"
 
 const CreateUserSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   email: z.string().email("Invalid email"),
   password: z.string().min(8, "Password must be at least 8 characters"),
-  role: z.enum(["EMPLOYEE", "HR", "IT", "ADMIN"]),
+  role: z.enum(ROLES),
   department: z.string().optional(),
   title: z.string().optional(),
 })

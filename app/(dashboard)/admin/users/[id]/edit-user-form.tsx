@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Loader2, Trash2, KeyRound } from "lucide-react"
 
-const ROLES = ["EMPLOYEE", "HR", "IT", "ADMIN"] as const
+import { ROLES } from "@/lib/roles"
 
 interface EditUserFormProps {
   user: {
