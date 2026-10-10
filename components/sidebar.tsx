@@ -12,10 +12,13 @@ import {
   Bookmark,
   ClipboardList,
   Settings,
+  Ticket,
+  Inbox,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { isStaff } from "@/lib/ticket-constants"
 import { useState } from "react"
 
 interface SidebarProps {
@@ -33,6 +36,7 @@ const navItems = [
   { href: "/benefits", label: "Benefits", icon: Heart },
   { href: "/hr", label: "HR Resources", icon: ClipboardList },
   { href: "/it-help", label: "IT Help Desk", icon: HelpCircle },
+  { href: "/tickets", label: "My Tickets", icon: Ticket },
   { href: "/events", label: "Events & Calendar", icon: Calendar },
   { href: "/quick-links", label: "Quick Links", icon: Bookmark },
 ]
@@ -45,6 +49,9 @@ export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const isAdmin = ["ADMIN", "HR"].includes(user.role)
+  const items = isStaff(user.role)
+    ? navItems.flatMap((i) => (i.href === "/tickets" ? [i, { href: "/tickets/queue", label: "Ticket Queue", icon: Inbox }] : [i]))
+    : navItems
 
   return (
     <aside
@@ -72,9 +79,12 @@ export function Sidebar({ user }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/")
+          const isActive =
+            item.href === "/tickets"
+              ? pathname === "/tickets" || (pathname.startsWith("/tickets/") && !pathname.startsWith("/tickets/queue"))
+              : pathname === item.href || pathname.startsWith(item.href + "/")
           return (
             <Link
               key={item.href}

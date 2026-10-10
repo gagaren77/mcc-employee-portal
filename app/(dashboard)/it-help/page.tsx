@@ -1,7 +1,7 @@
 "use client"
 
 import { HelpCircle, Monitor, Wifi, Lock, Printer, Phone, Mail, ExternalLink, MessageSquare, Ticket, AlertCircle, CheckCircle, Clock } from "lucide-react"
-import { useState } from "react"
+import { TicketForm } from "@/components/tickets/ticket-form"
 
 const categories = [
   {
@@ -12,7 +12,7 @@ const categories = [
     bg: "bg-red-50",
     items: [
       { title: "Password Reset", description: "Reset your MCC network or Office 365 password.", link: "#", linkText: "Reset Now" },
-      { title: "Account Lockout", description: "Your account is locked after 5 failed attempts. Contact IT.", link: "#", linkText: "Submit Ticket" },
+      { title: "Account Lockout", description: "Your account is locked after 5 failed attempts. Contact IT.", link: "/tickets/new", linkText: "Submit Ticket" },
       { title: "MFA Setup", description: "Set up multi-factor authentication for your account.", link: "#", linkText: "Setup Guide" },
       { title: "New Employee Account Setup", description: "First time login, email, Teams, and software access.", link: "#", linkText: "Guide" },
     ],
@@ -25,7 +25,7 @@ const categories = [
     bg: "bg-blue-50",
     items: [
       { title: "Equipment Request", description: "Request a new computer, monitor, keyboard, or accessories.", link: "#", linkText: "Request Form" },
-      { title: "Hardware Issues", description: "Computer not turning on, slow performance, broken equipment.", link: "#", linkText: "Submit Ticket" },
+      { title: "Hardware Issues", description: "Computer not turning on, slow performance, broken equipment.", link: "/tickets/new", linkText: "Submit Ticket" },
       { title: "Loaner Equipment", description: "Borrow a laptop or device temporarily.", link: "#", linkText: "Check Availability" },
     ],
   },
@@ -49,7 +49,7 @@ const categories = [
     bg: "bg-purple-50",
     items: [
       { title: "Printer Setup", description: "Add a campus printer to your computer.", link: "#", linkText: "Instructions" },
-      { title: "Print Issues", description: "Printer not working, paper jams, or print quality issues.", link: "#", linkText: "Submit Ticket" },
+      { title: "Print Issues", description: "Printer not working, paper jams, or print quality issues.", link: "/tickets/new", linkText: "Submit Ticket" },
       { title: "Printing Credits", description: "Check or add to your printing credit balance.", link: "#", linkText: "Print Portal" },
     ],
   },
@@ -87,17 +87,6 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function ITHelpPage() {
-  const [ticketForm, setTicketForm] = useState({ subject: "", description: "", category: "" })
-  const [submitted, setSubmitted] = useState(false)
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    // In production: POST to your ticketing system API
-    setSubmitted(true)
-    setTimeout(() => setSubmitted(false), 4000)
-    setTicketForm({ subject: "", description: "", category: "" })
-  }
-
   return (
     <div className="space-y-5">
       {/* Header */}
@@ -126,24 +115,24 @@ export default function ITHelpPage() {
                 <p className="text-xs text-gray-400">M–F 8am–6pm</p>
               </div>
             </a>
-            <a href="mailto:helpdesk@mccollege.edu" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <a href="mailto:techsupport@mccollege.edu" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
               <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
                 <Mail className="w-5 h-5 text-green-600" />
               </div>
               <div>
                 <p className="text-xs text-gray-500">Email IT</p>
-                <p className="text-sm font-semibold text-gray-800">helpdesk@mcc</p>
+                <p className="text-sm font-semibold text-gray-800">techsupport@</p>
                 <p className="text-xs text-gray-400">24hr response</p>
               </div>
             </a>
-            <a href="#" target="_blank" rel="noopener noreferrer" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
+            <a href="/tickets" className="mcc-card p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
               <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
                 <Ticket className="w-5 h-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-xs text-gray-500">IT Portal</p>
-                <p className="text-sm font-semibold text-gray-800">Ticket System</p>
-                <p className="text-xs text-gray-400 flex items-center gap-1">Open <ExternalLink className="w-3 h-3" /></p>
+                <p className="text-xs text-gray-500">Tickets</p>
+                <p className="text-sm font-semibold text-gray-800">My Tickets</p>
+                <p className="text-xs text-gray-400">Track requests</p>
               </div>
             </a>
           </div>
@@ -178,65 +167,16 @@ export default function ITHelpPage() {
             })}
           </div>
 
-          {/* Quick ticket form */}
+          {/* Ticket form */}
           <div className="mcc-card p-5">
-            <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#1a4a8a]" />
-              Submit a Support Ticket
-            </h3>
-            {submitted ? (
-              <div className="flex items-center gap-2 text-green-700 bg-green-50 rounded-xl p-4">
-                <CheckCircle className="w-5 h-5" />
-                <p className="text-sm font-medium">Ticket submitted! IT will respond within 24 hours.</p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Category</label>
-                    <select
-                      value={ticketForm.category}
-                      onChange={(e) => setTicketForm((p) => ({ ...p, category: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a8a] bg-white"
-                      required
-                    >
-                      <option value="">Select category</option>
-                      <option>Account & Password</option>
-                      <option>Hardware</option>
-                      <option>Network</option>
-                      <option>Software</option>
-                      <option>Printing</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Subject</label>
-                    <input
-                      type="text"
-                      value={ticketForm.subject}
-                      onChange={(e) => setTicketForm((p) => ({ ...p, subject: e.target.value }))}
-                      placeholder="Brief summary"
-                      required
-                      className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a8a]"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Description</label>
-                  <textarea
-                    value={ticketForm.description}
-                    onChange={(e) => setTicketForm((p) => ({ ...p, description: e.target.value }))}
-                    placeholder="Describe the issue in detail..."
-                    rows={3}
-                    required
-                    className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1a4a8a] resize-none"
-                  />
-                </div>
-                <button type="submit" className="mcc-btn-primary text-sm">
-                  Submit Ticket
-                </button>
-              </form>
-            )}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-[#1a4a8a]" />
+                Submit a Support Ticket
+              </h3>
+              <a href="/tickets" className="text-xs text-[#1a4a8a] font-medium hover:underline">My tickets →</a>
+            </div>
+            <TicketForm />
           </div>
         </div>
 
