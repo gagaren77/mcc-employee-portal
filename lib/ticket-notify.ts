@@ -99,6 +99,29 @@ export const notifyTeamNewTicket = (t: T, description: string) =>
     })
   })
 
+/**
+ * Tells an IT/Admin user that a ticket was assigned to them. Not sent when you assign it to yourself.
+ * The subject deliberately has no [MCC-n] tag: a reply to this email should not be imported into the
+ * ticket (and shown to the requester); staff respond inside the portal.
+ */
+export const notifyAssignee = (t: T, description: string, agent: { email: string; name?: string | null }, assignedBy?: string | null) =>
+  safe("assignee", async () => {
+    await sendMail({
+      to: [agent.email],
+      subject: `Ticket ${ticketNumber(t.number)} assigned to you: ${t.subject}`,
+      html: emailLayout(
+        `Ticket ${ticketNumber(t.number)} is assigned to you`,
+        para(`Hi${firstName(agent.name)},`) +
+          para(`${esc(assignedBy || "A teammate")} assigned this ticket to you.`) +
+          `<p style="font-size:15px;font-weight:600;margin:0 0 8px">${esc(t.subject)}</p>` +
+          para(`${esc(t.requesterName || t.requesterEmail)} &middot; ${esc(t.category ?? "")} &middot; ${esc(t.priority ?? "")}`) +
+          quote(description.slice(0, 800)) +
+          emailButton(appUrl(`/tickets/${t.id}`), "Open ticket") +
+          para(`<span style="color:#6b7280;font-size:12px">Please respond in the portal so the requester sees your reply.</span>`)
+      ),
+    })
+  })
+
 // ─── Approvals ───────────────────────────────────────────
 
 /**

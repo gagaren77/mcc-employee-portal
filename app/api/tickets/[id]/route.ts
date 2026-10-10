@@ -3,7 +3,7 @@ import { z } from "zod"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { addSystemNote, CATEGORIES, isStaff, PRIORITIES, STATUSES, STATUS_LABEL } from "@/lib/tickets"
-import { notifyRequesterStatus } from "@/lib/ticket-notify"
+import { notifyAssignee, notifyRequesterStatus } from "@/lib/ticket-notify"
 
 const Schema = z.object({
   status: z.enum(STATUSES).optional(),
@@ -27,6 +27,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { status, priority, assigneeId, category } = parsed.data
   const data: Record<string, unknown> = { lastActivityAt: new Date() }
   const notes: string[] = []
+  let newAssignee: { email: string; name: string | null } | null = null
 
   if (status && status !== ticket.status) {
     data.status = status
@@ -46,6 +47,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       const agent = await prisma.user.findUnique({ where: { id: assigneeId } })
       if (!agent || !isStaff(agent.role)) return NextResponse.json({ error: "Assignee must be IT or Admin" }, { status: 400 })
       notes.push(`Assigned to ${agent.name ?? agent.email}`)
+      if (agent.id !== session.user.id) newAssignee = { email: agent.email, name: agent.name } // no email when assigning to yourself
     } else {
       notes.push("Unassigned")
     }
@@ -56,6 +58,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
   const updated = await prisma.ticket.update({ where: { id }, data })
   await addSystemNote(id, notes.join(" · "), session.user.name)
+
+  if (newAssignee) void notifyAssignee(updated, updated.description, newAssignee, session.user.name)
 
   if (status && status !== ticket.status && (status === "RESOLVED" || status === "CLOSED")) {
     void notifyRequesterStatus(updated, status)
