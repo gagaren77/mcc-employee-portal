@@ -2,14 +2,17 @@ import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import Link from "next/link"
-import { Shield, Users, Megaphone, Calendar, Bookmark, PlusCircle } from "lucide-react"
+import { Shield, Users, Megaphone, Calendar, Bookmark, PlusCircle, Wrench } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 
 export default async function AdminPage() {
   const session = await auth()
-  if (!session?.user || !["ADMIN", "HR"].includes(session.user.role)) {
+  if (!session?.user || !["ADMIN", "HR", "IT"].includes(session.user.role)) {
     redirect("/dashboard")
   }
+  // IT can look but not change: content (events, announcements) is Admin/HR, accounts and roles are Admin only.
+  const canManage = ["ADMIN", "HR"].includes(session.user.role)
+  const isIT = session.user.role === "IT" || session.user.role === "ADMIN"
 
   const [users, announcements, events, quickLinks] = await Promise.all([
     prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 10 }),
@@ -51,6 +54,20 @@ export default async function AdminPage() {
         </div>
       </div>
 
+      {isIT && (
+        <div className="mcc-card p-6">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-3">
+            <Wrench className="w-5 h-5 text-[#1a4a8a]" />
+            IT tools
+          </h2>
+          <div className="flex flex-wrap gap-3 text-sm font-medium text-[#1a4a8a]">
+            <Link href="/tickets/queue" className="hover:underline">Ticket Queue →</Link>
+            <Link href="/it-help/system" className="hover:underline">Server health →</Link>
+            <Link href="/it-help" className="hover:underline">IT Help Desk →</Link>
+          </div>
+        </div>
+      )}
+
       {/* Announcements Management */}
       <div className="mcc-card p-6">
         <div className="flex items-center justify-between mb-4">
@@ -58,9 +75,11 @@ export default async function AdminPage() {
             <Megaphone className="w-5 h-5 text-[#1a4a8a]" />
             Announcements
           </h2>
+{canManage && (
           <Link href="/admin/announcements" className="text-sm font-medium text-[#1a4a8a] hover:underline">
             Manage announcements →
           </Link>
+)}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -105,12 +124,14 @@ export default async function AdminPage() {
             <Calendar className="w-5 h-5 text-[#1a4a8a]" />
             Events
           </h2>
+{canManage && (
           <Link
             href="/admin/events"
             className="text-sm font-medium text-[#1a4a8a] hover:underline"
           >
             Manage events →
           </Link>
+)}
         </div>
         <p className="text-sm text-gray-500">
           {events.length} event{events.length === 1 ? "" : "s"} in the portal. Click
@@ -125,12 +146,14 @@ export default async function AdminPage() {
             <Users className="w-5 h-5 text-[#1a4a8a]" />
             Registered Staff
           </h2>
+{canManage && (
           <Link
             href="/admin/users"
             className="text-sm font-medium text-[#1a4a8a] hover:underline"
           >
             Manage all users →
           </Link>
+)}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">

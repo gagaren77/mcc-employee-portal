@@ -10,6 +10,7 @@ import {
   HelpCircle,
   Calendar,
   Bookmark,
+  Megaphone,
   ClipboardList,
   Settings,
   ChevronLeft,
@@ -28,12 +29,13 @@ interface SidebarProps {
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/events", label: "Events & Calendar", icon: Calendar },
+  { href: "/announcements", label: "Announcements", icon: Megaphone },
   { href: "/directory", label: "Employee Directory", icon: Users },
   { href: "/documents", label: "Documents & SharePoint", icon: FileText },
   { href: "/benefits", label: "Benefits", icon: Heart },
-  { href: "/hr", label: "HR Resources", icon: ClipboardList },
   { href: "/it-help", label: "IT Help Desk", icon: HelpCircle },
-  { href: "/events", label: "Events & Calendar", icon: Calendar },
+  { href: "/hr", label: "HR Resources", icon: ClipboardList },
   { href: "/quick-links", label: "Quick Links", icon: Bookmark },
 ]
 
@@ -44,7 +46,7 @@ const adminItems = [
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const isAdmin = ["ADMIN", "HR"].includes(user.role)
+  const isAdmin = ["ADMIN", "HR", "IT"].includes(user.role) // IT gets a read-only Admin Panel
   const items = navItems // Ticket Queue now lives on the IT Help Desk page (staff only)
 
   return (
