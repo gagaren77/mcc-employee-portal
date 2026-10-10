@@ -190,7 +190,7 @@ export default function BenefitsPage() {
             <Phone className="w-4 h-4" />
             Contact HR
           </a>
-          <a href="#" className="flex items-center gap-2 bg-[#c9a227] hover:bg-[#b8911e] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          <a href="https://danzig.employeenavigator.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-[#c9a227] hover:bg-[#b8911e] px-4 py-2 rounded-lg text-sm font-medium transition-colors">
             <ExternalLink className="w-4 h-4" />
             Benefits Portal
           </a>
