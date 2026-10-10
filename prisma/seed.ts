@@ -31,6 +31,26 @@ async function main() {
     await prisma.event.upsert({ where: { id: e.id }, update: {}, create: e })
   }
 
+  // Ticketing launch announcement (needs an author; skipped if no admin exists yet).
+  const annAdmin = await prisma.user.findFirst({ where: { role: "ADMIN" } })
+  if (annAdmin) {
+    await prisma.announcement.upsert({
+      where: { id: "ann-ticketing-coming-soon" },
+      update: {},
+      create: {
+        id: "ann-ticketing-coming-soon",
+        title: "New IT Help Desk ticketing system coming soon",
+        content:
+          "IT is launching a ticketing system in the portal. You'll be able to submit requests, follow their progress and reply to IT in one place — and you'll get email updates. Emailing techsupport@mccollege.edu will keep working: every email becomes a ticket automatically. Look for \"My Tickets\" in the sidebar.",
+        category: "it",
+        priority: "HIGH",
+        authorId: annAdmin.id,
+        pinned: true,
+        published: true,
+      },
+    })
+  }
+
   // ─── Idempotency guard ────────────────────────────────
   // If users already exist, skip the destructive seeding.
   const userCount = await prisma.user.count()
