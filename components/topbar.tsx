@@ -1,7 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
-import { LogOut, User, Settings, ChevronDown, Users, Calendar, Ticket, Megaphone, Bookmark } from "lucide-react"
+import { LogOut, User, Settings, ChevronDown, Users, Calendar, Ticket, Megaphone } from "lucide-react"
 import { getInitials, APP_TIMEZONE } from "@/lib/utils"
 import { useState } from "react"
 import Link from "next/link"
@@ -128,17 +128,6 @@ export function TopBar({ user }: TopBarProps) {
                   >
                     <Megaphone className="w-4 h-4 text-gray-400" />
                     Announcements
-                  </Link>
-                )}
-
-                {isAdminLevel && (
-                  <Link
-                    href="/admin/quick-links"
-                    onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                  >
-                    <Bookmark className="w-4 h-4 text-gray-400" />
-                    Quick Links
                   </Link>
                 )}
 
