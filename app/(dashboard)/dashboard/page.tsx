@@ -3,8 +3,8 @@ import { prisma } from "@/lib/prisma"
 import { AnnouncementsWidget } from "@/components/widgets/announcements-widget"
 import { EventsWidget } from "@/components/widgets/events-widget"
 import { QuickLinksWidget } from "@/components/widgets/quick-links-widget"
+import { QUICK_LINK_CATEGORIES } from "@/lib/quick-link-constants"
 import { WelcomeBanner } from "@/components/widgets/welcome-banner"
-import { StatsWidget } from "@/components/widgets/stats-widget"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -22,10 +22,16 @@ export default async function DashboardPage() {
     }),
     prisma.quickLink.findMany({
       where: { isActive: true },
-      orderBy: { order: "asc" },
-      take: 12,
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
     }),
   ])
+
+  // Same group order as the Quick Links page, then each group's own order; the dashboard shows the first 8.
+  const rank = (c: string) => {
+    const i = (QUICK_LINK_CATEGORIES as readonly string[]).indexOf(c)
+    return i === -1 ? 99 : i
+  }
+  const dashboardLinks = [...quickLinks].sort((a, b) => rank(a.category) - rank(b.category) || a.order - b.order).slice(0, 8)
 
   return (
     <div className="space-y-6">
@@ -35,13 +41,12 @@ export default async function DashboardPage() {
         {/* Main column */}
         <div className="lg:col-span-2 space-y-6">
           <AnnouncementsWidget announcements={announcements} />
-          <QuickLinksWidget quickLinks={quickLinks} canManage={["ADMIN", "HR"].includes(session!.user.role)} />
         </div>
 
         {/* Side column */}
         <div className="space-y-6">
           <EventsWidget events={events} />
-          <StatsWidget />
+          <QuickLinksWidget quickLinks={dashboardLinks} canManage={["ADMIN", "HR"].includes(session!.user.role)} compact />
         </div>
       </div>
     </div>

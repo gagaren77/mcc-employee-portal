@@ -16,6 +16,7 @@ interface QuickLink {
 interface QuickLinksWidgetProps {
   quickLinks: QuickLink[]
   canManage?: boolean
+  compact?: boolean // narrow column: two tiles per row
 }
 
 const categoryColors: Record<string, string> = {
@@ -36,7 +37,7 @@ const categoryIconColors: Record<string, string> = {
   payroll: "text-amber-500",
 }
 
-export function QuickLinksWidget({ quickLinks, canManage = false }: QuickLinksWidgetProps) {
+export function QuickLinksWidget({ quickLinks, canManage = false, compact = false }: QuickLinksWidgetProps) {
   return (
     <div className="mcc-card p-5">
       <div className="flex items-center justify-between mb-4">
@@ -59,7 +60,7 @@ export function QuickLinksWidget({ quickLinks, canManage = false }: QuickLinksWi
           )}
         </p>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className={cn("grid grid-cols-2 gap-2", !compact && "sm:grid-cols-3")}>
           {quickLinks.map((link) => {
             const colorClass = categoryColors[link.category] ?? categoryColors.general
             const iconColorClass = categoryIconColors[link.category] ?? categoryIconColors.general
