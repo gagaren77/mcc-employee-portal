@@ -20,6 +20,7 @@ interface TopBarProps {
 export function TopBar({ user }: TopBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const isAdminLevel = ["ADMIN", "HR"].includes(user.role)
+  const canSeeAdminPanel = isAdminLevel || user.role === "IT"
 
   return (
     <header className="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200 shadow-sm">
@@ -130,7 +131,7 @@ export function TopBar({ user }: TopBarProps) {
                   </Link>
                 )}
 
-                {isAdminLevel && (
+                {canSeeAdminPanel && (
                   <Link
                     href="/admin"
                     onClick={() => setDropdownOpen(false)}

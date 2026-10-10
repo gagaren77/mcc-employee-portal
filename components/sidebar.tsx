@@ -46,7 +46,7 @@ const adminItems = [
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
-  const isAdmin = ["ADMIN", "HR"].includes(user.role)
+  const isAdmin = ["ADMIN", "HR", "IT"].includes(user.role) // IT gets a read-only Admin Panel
   const items = navItems // Ticket Queue now lives on the IT Help Desk page (staff only)
 
   return (
