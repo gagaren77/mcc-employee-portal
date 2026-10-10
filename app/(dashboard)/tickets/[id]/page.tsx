@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation"
+import { Linkify } from "@/components/tickets/linkify"
 import Link from "next/link"
 import { Mail, Globe } from "lucide-react"
 import { auth } from "@/auth"
@@ -77,7 +78,7 @@ export default async function TicketPage({ params }: { params: Promise<{ id: str
             <p className="text-xs text-gray-500 mb-2">
               {ticket.requesterName || ticket.requesterEmail} · {formatDateTime(ticket.createdAt)}
             </p>
-            <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{ticket.description}</p>
+            <p className="text-sm text-gray-800 whitespace-pre-wrap break-words"><Linkify text={ticket.description} /></p>
             <AttachmentGallery attachments={attachmentsFor(null)} />
           </div>
 

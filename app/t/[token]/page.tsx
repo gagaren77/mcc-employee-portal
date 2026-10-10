@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation"
+import { Linkify } from "@/components/tickets/linkify"
 import { Mail, Globe } from "lucide-react"
 import { prisma } from "@/lib/prisma"
 import { publicLinksEnabled } from "@/lib/ticket-links"
@@ -45,7 +46,7 @@ export default async function PublicTicketPage({ params }: { params: Promise<{ t
 
       <div className="mcc-card p-5">
         <p className="text-xs text-gray-500 mb-2">{ticket.requesterName || "Requester"} · {formatDateTime(ticket.createdAt)}</p>
-        <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{ticket.description}</p>
+        <p className="text-sm text-gray-800 whitespace-pre-wrap break-words"><Linkify text={ticket.description} /></p>
         <AttachmentGallery attachments={forComment(null)} basePath={base} />
       </div>
 
