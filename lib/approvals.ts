@@ -129,6 +129,6 @@ export async function decideApproval(token: string, decision: "APPROVED" | "DECL
     "Approval link"
   )
   await syncTicketStatus(approval.ticketId)
-  void notifyDecision(approval.ticket, who, decision, comment?.trim() || null)
+  void notifyDecision(approval.ticket, who, decision, comment?.trim() || null, approval.approverEmail)
   return { ok: true as const }
 }
