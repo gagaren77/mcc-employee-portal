@@ -1,6 +1,7 @@
 import { HelpCircle, Wifi, Lock, Printer, Mail, MessageSquare, Ticket, Inbox, AlertCircle, CheckCircle, Clock } from "lucide-react"
 import { auth } from "@/auth"
 import { isStaff } from "@/lib/ticket-constants"
+import { MetricsCard } from "@/components/system/metrics-card"
 import { TicketForm } from "@/components/tickets/ticket-form"
 
 const categories = [
@@ -128,6 +129,8 @@ export default async function ITHelpPage() {
               </a>
             )}
           </div>
+
+          {staff && <MetricsCard />}
 
           {/* Help categories */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
