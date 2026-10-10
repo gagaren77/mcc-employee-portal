@@ -25,6 +25,7 @@ model User {
   bio           String?
   startDate     DateTime?
   isActive      Boolean   @default(true)
+  notificationsSeenAt DateTime? // bell: everything newer than this is "unread" (nullable, additive)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
