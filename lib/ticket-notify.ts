@@ -66,7 +66,7 @@ export const notifyRequesterReply = (t: T, from: string, body: string) =>
     })
   })
 
-export const notifyRequesterStatus = (t: T, status: string) =>
+export const notifyRequesterStatus = (t: T, status: string, note?: string, byName?: string | null) =>
   safe("status", async () => {
     const href = await ticketLink(t)
     await sendMail({
@@ -75,6 +75,7 @@ export const notifyRequesterStatus = (t: T, status: string) =>
       html: emailLayout(
         `${ticketNumber(t.number)} is now ${STATUS_LABEL[status] ?? status}`,
         para(esc(t.subject)) +
+          (note ? para(`<b>Note from ${esc(byName || "IT Support")}:</b>`) + quote(note) : "") +
           (status === "RESOLVED" ? para("If this isn't fixed, reply to this email and the ticket will reopen.") : "") +
           emailButton(href, "View ticket")
       ),
@@ -82,7 +83,7 @@ export const notifyRequesterStatus = (t: T, status: string) =>
   })
 
 /** Tell the people who approved this ticket that the work is finished (once per ticket, per approver). */
-export const notifyApproversDone = (t: T, status: string) =>
+export const notifyApproversDone = (t: T, status: string, note?: string, byName?: string | null) =>
   safe("approvers-done", async () => {
     const approvals = await prisma.ticketApproval.findMany({ where: { ticketId: t.id, status: "APPROVED" } })
     if (approvals.length === 0) return
@@ -101,6 +102,7 @@ export const notifyApproversDone = (t: T, status: string) =>
           para(`Hi${firstName(a.approverName)},`) +
             para(`The request you approved has been ${word} by the IT Department.`) +
             quote(t.subject) +
+            (note ? para(`<b>Note from ${esc(byName || "IT Support")}:</b>`) + quote(note) : "") +
             para("If something doesn't look right, just reply to this email.") +
             emailButton(href, "View ticket")
         ),
