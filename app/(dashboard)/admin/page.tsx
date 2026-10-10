@@ -58,6 +58,9 @@ export default async function AdminPage() {
             <Megaphone className="w-5 h-5 text-[#1a4a8a]" />
             Announcements
           </h2>
+          <Link href="/admin/announcements" className="text-sm font-medium text-[#1a4a8a] hover:underline">
+            Manage announcements →
+          </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
